@@ -18,7 +18,7 @@ public class RattlegramLauncher extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         String mainFXMLPath = "fxml/main.fxml";
-        URL mainFXMLResource = getClass().getClassLoader().getResource(mainFXMLPath);
+        URL mainFXMLResource = getClass().getResource(mainFXMLPath);
         if (mainFXMLResource == null) {
             throw new MissingResourceException("Failed to load main.fxml",
                     RattlegramLauncher.class.getName(), mainFXMLPath);
