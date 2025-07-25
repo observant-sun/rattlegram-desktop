@@ -8,22 +8,16 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.MissingResourceException;
-import java.util.Objects;
 
 public class RattlegramLauncher extends Application {
 
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        String mainFXMLPath = "fxml/main.fxml";
-        URL mainFXMLResource = getClass().getResource(mainFXMLPath);
-        if (mainFXMLResource == null) {
-            throw new MissingResourceException("Failed to load main.fxml",
-                    RattlegramLauncher.class.getName(), mainFXMLPath);
-        }
-        Parent root = FXMLLoader.load(Objects.requireNonNull(mainFXMLResource));
+        Parent root = getParent();
         primaryStage.initStyle(StageStyle.DECORATED);
         int width = 800;
         int height = 600;
@@ -35,6 +29,15 @@ public class RattlegramLauncher extends Application {
         primaryStage.setOnCloseRequest(e -> Platform.exit());
     }
 
+    private Parent getParent() throws IOException {
+        String mainFXMLPath = "fxml/main.fxml";
+        URL mainFXMLResource = getClass().getResource(mainFXMLPath);
+        if (mainFXMLResource == null) {
+            throw new MissingResourceException("Failed to load main.fxml",
+                    RattlegramLauncher.class.getName(), mainFXMLPath);
+        }
+        return FXMLLoader.load(mainFXMLResource);
+    }
 
     public static void main(String[] args) {
         launch(args);

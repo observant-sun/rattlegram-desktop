@@ -17,6 +17,7 @@ import javafx.scene.layout.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -29,10 +30,12 @@ import java.util.function.Consumer;
 
 public class MainWindowController implements Initializable {
 
-
     private static final Logger log = LoggerFactory.getLogger(MainWindowController.class);
-    @FXML public HBox hBox;
-    @FXML public Label statusLabel;
+
+    @FXML private ButtonBar topButtonBar;
+    @FXML private Button settingsButton;
+    @FXML private HBox hBox;
+    @FXML private Label statusLabel;
     @FXML private AnchorPane anchorPane;
     @FXML private VBox vBox;
     @FXML private TextArea messagesTextArea;
@@ -42,16 +45,18 @@ public class MainWindowController implements Initializable {
     private Encoder encoder;
     private Decoder decoder;
     private AudioOutputHandler audioOutputHandler;
-    private final ExecutorService encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
-        Thread thread = new Thread(runnable, "encoder-thread");
-        thread.setDaemon(true);
-        return thread;
-    });
+    private ExecutorService encoderThread;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         final int sampleRate = 48000;
         encoder = new Encoder(sampleRate);
+
+        encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
+            Thread thread = new Thread(runnable, "encoder-thread");
+            thread.setDaemon(true);
+            return thread;
+        });
 
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
@@ -124,5 +129,13 @@ public class MainWindowController implements Initializable {
 
     private static byte[] getPayload(String message) {
         return Arrays.copyOf(message.getBytes(StandardCharsets.UTF_8), 170);
+    }
+
+    public void showSettingsWindow() {
+        try {
+            SettingsWindowStarter.get().start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -8,20 +8,32 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.control.Label?>
 
-<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.github.observant_sun.rattlegram.controller.MainWindowController">
-    <VBox fx:id="vBox" AnchorPane.bottomAnchor="0" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <Label fx:id="statusLabel" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" alignment="CENTER" textAlignment="CENTER" prefWidth="Infinity"/>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Button?>
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.github.observant_sun.rattlegram.controller.MainWindowController">
+    <VBox fx:id="vBox" AnchorPane.bottomAnchor="0" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0">
+        <ButtonBar fx:id="topButtonBar" AnchorPane.topAnchor="0">
+            <buttons>
+                <Button fx:id="settingsButton" text="Settings" onMouseClicked="#showSettingsWindow">
+                </Button>
+            </buttons>
+        </ButtonBar>
+        <Label fx:id="statusLabel" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" alignment="CENTER"
+               textAlignment="CENTER" prefWidth="Infinity"/>
         <TextArea fx:id="messagesTextArea" editable="false" minWidth="400" VBox.vgrow="ALWAYS">
         </TextArea>
         <HBox fx:id="hBox" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" VBox.vgrow="NEVER" minHeight="30">
-            <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="Callsign" prefWidth="50" maxWidth="75" >
+            <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="Callsign" prefWidth="50" maxWidth="75">
                 <font>
-                    <Font name="SansSerif Regular" size="14.0" />
+                    <Font name="SansSerif Regular" size="14.0"/>
                 </font>
             </TextField>
-            <TextField fx:id="messageBox" onKeyPressed="#sendMethod" promptText="Enter message..." HBox.hgrow="ALWAYS" prefWidth="599" >
+            <TextField fx:id="messageBox" onKeyPressed="#sendMethod" promptText="Enter message..."
+                       HBox.hgrow="ALWAYS" prefWidth="599">
                 <font>
-                    <Font name="SansSerif Regular" size="14.0" />
+                    <Font name="SansSerif Regular" size="14.0"/>
                 </font>
             </TextField>
         </HBox>
