@@ -7,6 +7,7 @@ import com.github.observant_sun.rattlegram.encoding.Encoder;
 import com.github.observant_sun.rattlegram.entity.Message;
 import com.github.observant_sun.rattlegram.entity.StatusType;
 import com.github.observant_sun.rattlegram.entity.StatusUpdate;
+import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -49,10 +50,16 @@ public class MainWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        final int sampleRate = 48000;
-        encoder = new Encoder(sampleRate);
+        initializeResources();
+    }
 
-        encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
+    private void initializeResources() {
+        final int sampleRate = 48000;
+
+        this.encoder = new Encoder(sampleRate);
+        this.audioOutputHandler = new AudioOutputHandler(sampleRate);
+
+        this.encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
             Thread thread = new Thread(runnable, "encoder-thread");
             thread.setDaemon(true);
             return thread;
@@ -61,9 +68,14 @@ public class MainWindowController implements Initializable {
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
         AudioInputHandler audioInputHandler = new AudioInputHandler(sampleRate);
-        decoder = new Decoder(sampleRate, newMessageCallback, statusUpdateCallback, audioInputHandler);
-        audioOutputHandler = new AudioOutputHandler(sampleRate);
+        this.decoder = new Decoder(sampleRate, newMessageCallback, statusUpdateCallback, audioInputHandler);
         processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening"));
+    }
+
+    private void closeResources() {
+        encoder.close();
+        decoder.close();
+        encoderThread.shutdownNow();
     }
 
     private void processNewMessage(Message message) {
@@ -90,21 +102,22 @@ public class MainWindowController implements Initializable {
         messageBox.clear();
         messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message));
 
+        final int carrierFrequency = 1500;
+        final int noiseSymbols = 6;
+        final boolean fancyHeader = false;
+        final int channelSelect = 0;
+        final int repeatCount = 15;
+        TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect, repeatCount);
         encoderThread.submit(() -> {
-            byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes);
+            byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes, transmissionSettings);
             playAudioOutputBytes(audioOutputBytes);
         });
     }
 
-    private byte[] produceAudioOutputBytes(byte[] payload, byte[] callsignBytes) {
-        final int carrierFrequency = 1500;
-        final int noiseSymbols = 6;
-        final boolean fancyHeader = false;
-        encoder.configure(payload, callsignBytes, carrierFrequency, noiseSymbols, fancyHeader);
+    private byte[] produceAudioOutputBytes(byte[] payload, byte[] callsignBytes, TransmissionSettings transmissionSettings) {
+        encoder.configure(payload, callsignBytes, transmissionSettings.carrierFrequency(), transmissionSettings.noiseSymbols(), transmissionSettings.fancyHeader());
 
-        int channelSelect = 0;
-        int repeatCount = 15;
-        return encoder.produce(channelSelect, repeatCount);
+        return encoder.produce(transmissionSettings.channelSelect(), transmissionSettings.repeatCount());
     }
 
     private void playAudioOutputBytes(byte[] arr) {
