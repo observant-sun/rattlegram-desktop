@@ -66,6 +66,7 @@ public class Encoder implements AutoCloseable {
     public void close() {
         if (this.encoderHandle != 0) {
             destroyEncoder(this.encoderHandle);
+            this.encoderHandle = 0;
         }
     }
 
