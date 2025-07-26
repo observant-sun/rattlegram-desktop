@@ -81,6 +81,7 @@ public class MainWindowController implements Initializable {
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
         AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);
         this.decoder = new Decoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, audioInputHandler);
+        this.decoder.start();
         processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening"));
     }
 

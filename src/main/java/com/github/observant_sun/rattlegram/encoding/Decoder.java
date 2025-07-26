@@ -58,14 +58,15 @@ public class Decoder implements AutoCloseable {
         this.newMessageCallback = newMessageCallback;
         this.statusUpdateCallback = statusUpdateCallback;
         this.audioInputHandler = audioInputHandler;
-        try {
-            init();
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
+        init();
     }
 
     public void start() {
+        try {
+            audioInputHandler.start();
+        } catch (LineUnavailableException e) {
+            throw new RuntimeException(e);
+        }
         Thread decoderThread = new Thread(this::run);
         decoderThread.setDaemon(true);
         decoderThread.start();
@@ -85,8 +86,7 @@ public class Decoder implements AutoCloseable {
 
     private native void destroyDecoder(long decoderHandle);
 
-    private void init() throws LineUnavailableException {
-        final int channelCount = 1;
+    private void init() {
         decoderHandle = createNewDecoder(sampleRate);
         if (decoderHandle == 0) {
             throw new RuntimeException("Failed to create decoder");
@@ -95,7 +95,6 @@ public class Decoder implements AutoCloseable {
         int transformedAudioInputBufferLength = channelCount * recordCount;
         audioInputBuffer = new byte[transformedAudioInputBufferLength * 2];
         transformedAudioInputBuffer = new short[transformedAudioInputBufferLength];
-        audioInputHandler.start();
     }
 
     private void run() {
