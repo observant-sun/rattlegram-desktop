@@ -115,8 +115,7 @@ public class Model {
         final int noiseSymbols = prefs.get(AppPreferences.Pref.LEADING_NOISE, LeadingNoise.class).getNoiseSymbols();
         final boolean fancyHeader = prefs.get(AppPreferences.Pref.FANCY_HEADER, Boolean.class);
         final int channelSelect = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class).getIntValue();
-        final int repeatCount = 15;
-        TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect, repeatCount);
+        TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect);
         encoderThread.submit(() -> {
             byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes, transmissionSettings);
             playAudioOutputBytes(audioOutputBytes);
@@ -145,7 +144,7 @@ public class Model {
     private byte[] produceAudioOutputBytes(byte[] payload, byte[] callsignBytes, TransmissionSettings transmissionSettings) {
         encoder.configure(payload, callsignBytes, transmissionSettings.carrierFrequency(), transmissionSettings.noiseSymbols(), transmissionSettings.fancyHeader());
 
-        return encoder.produce(transmissionSettings.channelSelect(), transmissionSettings.repeatCount());
+        return encoder.produce(transmissionSettings.channelSelect());
     }
 
     private void playAudioOutputBytes(byte[] arr) {

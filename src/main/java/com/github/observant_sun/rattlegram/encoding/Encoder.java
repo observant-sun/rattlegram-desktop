@@ -9,6 +9,8 @@ import java.util.List;
 
 public class Encoder implements AutoCloseable {
 
+    private static final int REPEAT_COUNT = 50;
+
     private static final Logger log = LoggerFactory.getLogger(Encoder.class);
 
     static {
@@ -46,10 +48,10 @@ public class Encoder implements AutoCloseable {
         this.configureEncoder(this.encoderHandle, payload, callSign, carrierFrequency, noiseSymbols, fancyHeader);
     }
 
-    public byte[] produce(int channelSelect, int repeatCount) {
-        log.debug("produce({}, {}), encoderHandle={}", channelSelect, repeatCount, encoderHandle);
+    public byte[] produce(int channelSelect) {
+        log.debug("produce(channelSelect={}), encoderHandle={}", channelSelect, encoderHandle);
         List<byte[]> list = new ArrayList<>();
-        for (int i = 0; i < repeatCount; i++) {
+        for (int i = 0; i < REPEAT_COUNT; i++) {
             boolean okay = this.produceEncoder(this.encoderHandle, outputBuffer, channelSelect);
             if (!okay) {
                 break;

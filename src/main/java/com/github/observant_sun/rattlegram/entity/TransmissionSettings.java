@@ -4,7 +4,6 @@ public record TransmissionSettings(
         int carrierFrequency,
         int noiseSymbols,
         boolean fancyHeader,
-        int channelSelect,
-        int repeatCount
+        int channelSelect
 ) {
 }
