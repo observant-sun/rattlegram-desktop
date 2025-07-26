@@ -17,11 +17,6 @@ Currently only works on Linux. Capable of sending and receiving, but settings ar
 * JDK version >= 17
 * GCC (tested with version 15.1.1)
 
-### Building
-```bash
-./gradlew build
-```
-
 ### Running from source code
 ```bash
 ./gradlew run
@@ -32,3 +27,10 @@ A file `build/distributions/rattlegram-desktop-{version}-{platform}.zip` should 
 ```bash
 ./gradlew clean jlinkZip
 ```
+
+## TODO
+* Settings
+* Decoder spectrum
+* i18n and l10n
+* Repeater mode
+* Input validation
