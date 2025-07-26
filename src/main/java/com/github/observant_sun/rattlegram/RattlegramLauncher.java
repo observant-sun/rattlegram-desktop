@@ -14,7 +14,6 @@ import java.util.MissingResourceException;
 
 public class RattlegramLauncher extends Application {
 
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = getParent();

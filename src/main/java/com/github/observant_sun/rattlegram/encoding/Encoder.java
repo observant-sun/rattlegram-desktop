@@ -1,11 +1,15 @@
 package com.github.observant_sun.rattlegram.encoding;
 
 import com.github.observant_sun.rattlegram.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Encoder implements AutoCloseable {
+
+    private static final Logger log = LoggerFactory.getLogger(Encoder.class);
 
     static {
         System.loadLibrary("rattlegram");
@@ -43,9 +47,14 @@ public class Encoder implements AutoCloseable {
     }
 
     public byte[] produce(int channelSelect, int repeatCount) {
+        log.debug("produce({}, {}), encoderHandle={}", channelSelect, repeatCount, encoderHandle);
         List<byte[]> list = new ArrayList<>();
         for (int i = 0; i < repeatCount; i++) {
-            this.produceEncoder(this.encoderHandle, outputBuffer, channelSelect);
+            boolean okay = this.produceEncoder(this.encoderHandle, outputBuffer, channelSelect);
+            if (!okay) {
+                log.error("Produce encoder failed. channelSelect={}, repeatCount={}, encoderHandle={}, outputBuffer.length={}", channelSelect, repeatCount, encoderHandle, outputBuffer.length);
+                break;
+            }
             byte[] bytes = Utils.shortArrayToNewByteArray(outputBuffer);
             list.add(bytes);
         }
@@ -66,6 +75,7 @@ public class Encoder implements AutoCloseable {
     public void close() {
         if (this.encoderHandle != 0) {
             destroyEncoder(this.encoderHandle);
+            log.debug("Encoder {} destroyed", this.encoderHandle);
             this.encoderHandle = 0;
         }
     }
