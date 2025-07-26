@@ -4,10 +4,8 @@ import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.encoding.Decoder;
 import com.github.observant_sun.rattlegram.encoding.Encoder;
-import com.github.observant_sun.rattlegram.entity.Message;
-import com.github.observant_sun.rattlegram.entity.StatusType;
-import com.github.observant_sun.rattlegram.entity.StatusUpdate;
-import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
+import com.github.observant_sun.rattlegram.entity.*;
+import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -50,14 +48,25 @@ public class MainWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        initializeResources();
+        String callsign = AppPreferences.get().get(AppPreferences.Pref.CALLSIGN, String.class);
+        this.callsignBox.setText(callsign);
+
+        this.callsignBox.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                saveCallsign();
+            }
+        });
+
+        initializeEncoders();
     }
 
-    private void initializeResources() {
-        final int sampleRate = 48000;
+    private void initializeEncoders() {
+        AppPreferences prefs = AppPreferences.get();
+        final int outputSampleRate = prefs.get(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
+        final int outputChannelCount = prefs.get(AppPreferences.Pref.OUTPUT_AUDIO_MODE, AudioMode.class).getChannelCount();
 
-        this.encoder = new Encoder(sampleRate);
-        this.audioOutputHandler = new AudioOutputHandler(sampleRate);
+        this.encoder = new Encoder(outputSampleRate);
+        this.audioOutputHandler = new AudioOutputHandler(outputSampleRate, outputChannelCount);
 
         this.encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
             Thread thread = new Thread(runnable, "encoder-thread");
@@ -65,10 +74,13 @@ public class MainWindowController implements Initializable {
             return thread;
         });
 
+        final int inputSampleRate = prefs.get(AppPreferences.Pref.INPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
+        final int inputChannel = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getIntValue();
+        final int inputChannelCount = prefs.get(AppPreferences.Pref.INPUT_AUDIO_MODE, AudioMode.class).getChannelCount();
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
-        AudioInputHandler audioInputHandler = new AudioInputHandler(sampleRate);
-        this.decoder = new Decoder(sampleRate, newMessageCallback, statusUpdateCallback, audioInputHandler);
+        AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);
+        this.decoder = new Decoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, audioInputHandler);
         processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening"));
     }
 
@@ -102,10 +114,11 @@ public class MainWindowController implements Initializable {
         messageBox.clear();
         messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message));
 
-        final int carrierFrequency = 1500;
-        final int noiseSymbols = 6;
-        final boolean fancyHeader = false;
-        final int channelSelect = 0;
+        AppPreferences prefs = AppPreferences.get();
+        final int carrierFrequency = prefs.get(AppPreferences.Pref.CARRIER_FREQUENCY, Integer.class);
+        final int noiseSymbols = prefs.get(AppPreferences.Pref.LEADING_NOISE, LeadingNoise.class).getNoiseSymbols();
+        final boolean fancyHeader = prefs.get(AppPreferences.Pref.FANCY_HEADER, Boolean.class);
+        final int channelSelect = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class).getIntValue();
         final int repeatCount = 15;
         TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect, repeatCount);
         encoderThread.submit(() -> {
@@ -145,10 +158,20 @@ public class MainWindowController implements Initializable {
     }
 
     public void showSettingsWindow() {
+        decoder.pause();
         try {
-            SettingsWindowStarter.get().start();
+            Runnable updatePreferencesCallback = () -> {
+                this.closeResources();
+                this.initializeEncoders();
+            };
+            SettingsWindowStarter.get().start(updatePreferencesCallback);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void saveCallsign() {
+        String text = this.callsignBox.getText();
+        AppPreferences.get().set(AppPreferences.Pref.CALLSIGN, text);
     }
 }

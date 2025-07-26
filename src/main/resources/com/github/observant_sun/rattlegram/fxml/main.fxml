@@ -25,7 +25,7 @@
         <TextArea fx:id="messagesTextArea" editable="false" minWidth="400" VBox.vgrow="ALWAYS">
         </TextArea>
         <HBox fx:id="hBox" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" VBox.vgrow="NEVER" minHeight="30">
-            <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="Callsign" prefWidth="50" maxWidth="75">
+            <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="Callsign" prefWidth="120" maxWidth="120">
                 <font>
                     <Font name="SansSerif Regular" size="14.0"/>
                 </font>

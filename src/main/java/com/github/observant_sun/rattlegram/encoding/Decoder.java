@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 // TODO: refactor
@@ -23,6 +26,8 @@ public class Decoder implements AutoCloseable {
     }
 
     private final int sampleRate;
+    private final int recordChannel;
+    private final int channelCount;
 
     private final AudioInputHandler audioInputHandler;
 
@@ -41,9 +46,15 @@ public class Decoder implements AutoCloseable {
     private final byte[] stagedCall = new byte[10];
     private final byte[] payload = new byte[170];
 
-    public Decoder(int sampleRate, Consumer<Message> newMessageCallback, Consumer<StatusUpdate> statusUpdateCallback,
+    private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final Semaphore runSemaphore = new Semaphore(1);
+
+    public Decoder(int sampleRate, int recordChannel, int channelCount,
+                   Consumer<Message> newMessageCallback, Consumer<StatusUpdate> statusUpdateCallback,
                    AudioInputHandler audioInputHandler) {
         this.sampleRate = sampleRate;
+        this.recordChannel = recordChannel;
+        this.channelCount = channelCount;
         this.newMessageCallback = newMessageCallback;
         this.statusUpdateCallback = statusUpdateCallback;
         this.audioInputHandler = audioInputHandler;
@@ -54,6 +65,11 @@ public class Decoder implements AutoCloseable {
         }
     }
 
+    public void start() {
+        Thread decoderThread = new Thread(this::run);
+        decoderThread.setDaemon(true);
+        decoderThread.start();
+    }
 
     private native boolean feedDecoder(long decoderHandle, short[] audioBuffer, int sampleCount, int channelSelect);
 
@@ -71,9 +87,6 @@ public class Decoder implements AutoCloseable {
 
     private void init() throws LineUnavailableException {
         final int channelCount = 1;
-        final int sampleSize = 2; //
-        final int frameSize = sampleSize * channelCount;
-        final int bufferSize = 2 * Integer.highestOneBit(3 * sampleRate) * frameSize;
         decoderHandle = createNewDecoder(sampleRate);
         if (decoderHandle == 0) {
             throw new RuntimeException("Failed to create decoder");
@@ -83,13 +96,11 @@ public class Decoder implements AutoCloseable {
         audioInputBuffer = new byte[transformedAudioInputBufferLength * 2];
         transformedAudioInputBuffer = new short[transformedAudioInputBufferLength];
         audioInputHandler.start();
-        Thread thread = new Thread(this::run);
-        thread.setDaemon(true);
-        thread.start();
     }
 
     private void run() {
-        while (true) {
+        runSemaphore.acquireUninterruptibly();
+        while (!closed.get()) {
             int read;
             try {
                 read = audioInputHandler.read(audioInputBuffer);
@@ -103,10 +114,10 @@ public class Decoder implements AutoCloseable {
             copyToTransformedBuffer();
             decodeNextBytes();
         }
+        runSemaphore.release();
     }
 
     private void decodeNextBytes() {
-        final int recordChannel = 0;
         if (!feedDecoder(decoderHandle, transformedAudioInputBuffer, recordCount, recordChannel))
             return;
         int status = processDecoder(decoderHandle);
@@ -178,16 +189,32 @@ public class Decoder implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
+        log.debug("Asking decoder to stop");
+        closed.set(true);
+        try {
+            boolean acquired = runSemaphore.tryAcquire(3, TimeUnit.SECONDS);
+            if (!acquired) {
+                log.error("Failed to acquire runSemaphore for closing, calling System.exit() so application doesn't hang");
+                System.exit(1);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         try {
             audioInputHandler.close();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+        log.debug("Closing decoder {}", decoderHandle);
         try {
-            destroyDecoder(decoderHandle);
+            if (decoderHandle != 0) {
+                destroyDecoder(decoderHandle);
+                decoderHandle = 0;
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+        runSemaphore.release();
     }
 }

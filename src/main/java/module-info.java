@@ -1,5 +1,4 @@
 module rattlegram {
-    requires java.base;
     requires javafx.base;
     requires javafx.controls;
     requires javafx.fxml;
@@ -7,6 +6,7 @@ module rattlegram {
     requires javafx.media;
     requires org.slf4j;
     requires java.desktop;
+    requires java.prefs;
 
     opens com.github.observant_sun.rattlegram.controller to javafx.fxml;
     exports com.github.observant_sun.rattlegram;

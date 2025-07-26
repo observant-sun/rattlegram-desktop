@@ -19,16 +19,21 @@ public class SettingsWindowStarter {
         return InstanceHolder.instance;
     }
 
-    public void start() throws IOException {
+    public void start(Runnable updatePreferencesCallback) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/settings.fxml"));
         Parent parent = loader.load();
         SettingsWindowController controller = loader.getController();
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setTitle("Settings");
-        stage.setScene(new Scene(parent));
-        stage.setOnHidden(event -> controller.saveSettings());
+        stage.setTitle("Preferences");
+        int width = 800;
+        int height = 400;
+        stage.setScene(new Scene(parent, width, height));
+        stage.setOnHidden(event -> {
+            controller.saveSettings();
+            updatePreferencesCallback.run();
+        });
         stage.show();
     }
 }

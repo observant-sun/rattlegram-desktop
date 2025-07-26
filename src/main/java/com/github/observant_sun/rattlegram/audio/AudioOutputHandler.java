@@ -8,9 +8,11 @@ import javax.sound.sampled.LineUnavailableException;
 public class AudioOutputHandler {
 
     private final int sampleRate;
+    private final int channelCount;
 
-    public AudioOutputHandler(int sampleRate) {
+    public AudioOutputHandler(int sampleRate, int channelCount) {
         this.sampleRate = sampleRate;
+        this.channelCount = channelCount;
     }
 
     public synchronized void play(byte[] buffer) {
@@ -33,10 +35,9 @@ public class AudioOutputHandler {
     private AudioFormat getAudioFormat() {
         AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
         int sampleSizeInBits = 16;
-        int channels = 1;
         int frameSize = 2;
         float frameRate = (float) (sampleRate / 2);
         boolean bigEndian = false;
-        return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, frameRate, bigEndian);
+        return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channelCount, frameSize, frameRate, bigEndian);
     }
 }

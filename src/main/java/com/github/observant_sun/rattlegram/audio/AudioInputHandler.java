@@ -14,9 +14,11 @@ public class AudioInputHandler implements AutoCloseable {
     private AudioInputStream audioInputStream;
 
     private final int sampleRate;
+    private final int channelCount;
 
-    public AudioInputHandler(int sampleRate) {
+    public AudioInputHandler(int sampleRate, int channelCount) {
         this.sampleRate = sampleRate;
+        this.channelCount = channelCount;
     }
 
     public void start() throws LineUnavailableException {
@@ -56,26 +58,23 @@ public class AudioInputHandler implements AutoCloseable {
 
     private AudioFormat getAudioFormat() {
         int sampleSizeInBits = 16; // 2 bytes
-        int channels = 1; // mono
         boolean signed = true;
         boolean bigEndian = false;
-        return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
+        return new AudioFormat(sampleRate, sampleSizeInBits, channelCount, signed, bigEndian);
     }
 
     @Override
     public void close() {
+        try {
+            line.close();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
         log.debug("Closing audio input handler");
         try {
             audioInputStream.close();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        audioInputStream = null;
-        try {
-            line.close();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        line = null;
     }
 }
