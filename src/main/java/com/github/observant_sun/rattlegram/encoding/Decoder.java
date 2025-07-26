@@ -189,6 +189,7 @@ public class Decoder implements AutoCloseable {
 
     @Override
     public void close() {
+        resume(); // needed to unlock audioInputHandler
         log.debug("Asking decoder to stop");
         closed.set(true);
         try {

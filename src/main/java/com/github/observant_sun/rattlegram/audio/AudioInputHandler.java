@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AudioInputHandler implements AutoCloseable {
 
@@ -12,6 +13,8 @@ public class AudioInputHandler implements AutoCloseable {
 
     private TargetDataLine line;
     private AudioInputStream audioInputStream;
+
+    private final ReentrantLock reentrantLock = new ReentrantLock();
 
     private final int sampleRate;
     private final int channelCount;
@@ -45,15 +48,21 @@ public class AudioInputHandler implements AutoCloseable {
     public void pause() {
         log.debug("Pausing audio input stream");
         line.stop();
+        reentrantLock.lock();
     }
 
     public void resume() {
         log.debug("Resuming audio input stream");
         line.start();
+        reentrantLock.unlock();
     }
 
     public int read(byte[] buffer) throws IOException {
-        return audioInputStream.read(buffer);
+        // AudioInputStream.read(byte[]) does not block if line is stopped
+        reentrantLock.lock();
+        int read = audioInputStream.read(buffer);
+        reentrantLock.unlock();
+        return read;
     }
 
     private AudioFormat getAudioFormat() {
