@@ -35,8 +35,8 @@ public class AudioOutputHandler {
     private AudioFormat getAudioFormat() {
         AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
         int sampleSizeInBits = 16;
-        int frameSize = 2;
-        float frameRate = (float) (sampleRate / 2);
+        int frameSize = 2 * channelCount;
+        float frameRate = (float) (sampleRate / frameSize);
         boolean bigEndian = false;
         return new AudioFormat(encoding, sampleRate, sampleSizeInBits, channelCount, frameSize, frameRate, bigEndian);
     }

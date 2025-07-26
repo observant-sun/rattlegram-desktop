@@ -15,8 +15,6 @@
         <ChoiceBox fx:id="inputSampleRateChoiceBox"/>
         <Label fx:id="inputChannelChoiceBoxLabel" text="Input channel"/>
         <ChoiceBox fx:id="inputChannelChoiceBox" />
-        <Label fx:id="inputAudioModeChoiceBoxLabel" text="Input audio mode" />
-        <ChoiceBox fx:id="inputAudioModeChoiceBox" />
 
         <Label fx:id="outputSampleRateChoiceBoxLabel" text="Output sample rate" />
         <ChoiceBox fx:id="outputSampleRateChoiceBox" />
@@ -28,7 +26,5 @@
         <CheckBox fx:id="fancyHeaderCheckBox" />
         <Label fx:id="outputChannelChoiceBoxLabel" text="Output channel" />
         <ChoiceBox fx:id="outputChannelChoiceBox" />
-        <Label fx:id="outputAudioModeChoiceBoxLabel" text="Output audio mode" />
-        <ChoiceBox fx:id="outputAudioModeChoiceBox" />
     </TilePane>
 </AnchorPane>

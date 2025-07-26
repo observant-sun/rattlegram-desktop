@@ -54,9 +54,9 @@ public class Model {
     public void initializeEncoders() {
         AppPreferences prefs = AppPreferences.get();
         final int outputSampleRate = prefs.get(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
-        final int outputChannelCount = prefs.get(AppPreferences.Pref.OUTPUT_AUDIO_MODE, AudioMode.class).getChannelCount();
+        final int outputChannelCount = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
 
-        this.encoder = new Encoder(outputSampleRate);
+        this.encoder = new Encoder(outputSampleRate, outputChannelCount);
         this.audioOutputHandler = new AudioOutputHandler(outputSampleRate, outputChannelCount);
 
         this.encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
@@ -67,7 +67,7 @@ public class Model {
 
         final int inputSampleRate = prefs.get(AppPreferences.Pref.INPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
         final int inputChannel = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getIntValue();
-        final int inputChannelCount = prefs.get(AppPreferences.Pref.INPUT_AUDIO_MODE, AudioMode.class).getChannelCount();
+        final int inputChannelCount = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getChannelCount();
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
         AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);

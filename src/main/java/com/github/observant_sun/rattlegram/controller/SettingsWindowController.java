@@ -27,14 +27,10 @@ public class SettingsWindowController implements Initializable {
     @FXML private CheckBox fancyHeaderCheckBox;
     @FXML private Label inputChannelChoiceBoxLabel;
     @FXML private ChoiceBox<InputChannel> inputChannelChoiceBox;
-    @FXML private Label inputAudioModeChoiceBoxLabel;
-    @FXML private ChoiceBox<AudioMode> inputAudioModeChoiceBox;
     @FXML private Label outputSampleRateChoiceBoxLabel;
     @FXML private ChoiceBox<SampleRate> outputSampleRateChoiceBox;
     @FXML private Label outputChannelChoiceBoxLabel;
     @FXML private ChoiceBox<OutputChannel> outputChannelChoiceBox;
-    @FXML private Label outputAudioModeChoiceBoxLabel;
-    @FXML private ChoiceBox<AudioMode> outputAudioModeChoiceBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,10 +43,8 @@ public class SettingsWindowController implements Initializable {
         inputSampleRateChoiceBox.getItems().addAll(SampleRate.values());
         leadingNoiseChoiceBox.getItems().addAll(LeadingNoise.values());
         inputChannelChoiceBox.getItems().addAll(InputChannel.values());
-        inputAudioModeChoiceBox.getItems().addAll(AudioMode.values());
         outputSampleRateChoiceBox.getItems().addAll(SampleRate.values());
         outputChannelChoiceBox.getItems().addAll(OutputChannel.values());
-        outputAudioModeChoiceBox.getItems().addAll(AudioMode.values());
     }
 
     public void loadSettings() {
@@ -61,8 +55,6 @@ public class SettingsWindowController implements Initializable {
         inputSampleRateChoiceBox.setValue(inputSampleRate);
         InputChannel inputChannel = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class);
         inputChannelChoiceBox.setValue(inputChannel);
-        AudioMode inputAudioMode = prefs.get(AppPreferences.Pref.INPUT_AUDIO_MODE, AudioMode.class);
-        inputAudioModeChoiceBox.setValue(inputAudioMode);
         SampleRate outputSampleRate = prefs.get(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, SampleRate.class);
         outputSampleRateChoiceBox.setValue(outputSampleRate);
         Integer carrierFrequency = prefs.get(AppPreferences.Pref.CARRIER_FREQUENCY, Integer.class);
@@ -73,8 +65,6 @@ public class SettingsWindowController implements Initializable {
         fancyHeaderCheckBox.setSelected(fancyHeader);
         OutputChannel outputChannel = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class);
         outputChannelChoiceBox.setValue(outputChannel);
-        AudioMode outputAudioMode = prefs.get(AppPreferences.Pref.OUTPUT_AUDIO_MODE, AudioMode.class);
-        outputAudioModeChoiceBox.setValue(outputAudioMode);
     }
 
     public void saveSettings() {
@@ -84,8 +74,6 @@ public class SettingsWindowController implements Initializable {
         prefs.set(AppPreferences.Pref.INPUT_SAMPLE_RATE, inputSampleRate);
         InputChannel inputChannel = inputChannelChoiceBox.getValue();
         prefs.set(AppPreferences.Pref.INPUT_CHANNEL, inputChannel);
-        AudioMode inputAudioMode = inputAudioModeChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.INPUT_AUDIO_MODE, inputAudioMode);
         SampleRate outputSampleRate = outputSampleRateChoiceBox.getValue();
         prefs.set(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, outputSampleRate);
         Integer carrierFrequency = carrierFrequencySpinner.getValue();
@@ -96,8 +84,6 @@ public class SettingsWindowController implements Initializable {
         prefs.set(AppPreferences.Pref.FANCY_HEADER, fancyHeader);
         OutputChannel outputChannel = outputChannelChoiceBox.getValue();
         prefs.set(AppPreferences.Pref.OUTPUT_CHANNEL, outputChannel);
-        AudioMode outputAudioMode = outputAudioModeChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.OUTPUT_AUDIO_MODE, outputAudioMode);
     }
 
 }

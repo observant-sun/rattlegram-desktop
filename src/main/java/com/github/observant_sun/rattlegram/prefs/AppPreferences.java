@@ -20,10 +20,8 @@ public class AppPreferences {
         LEADING_NOISE(LeadingNoise.class),
         FANCY_HEADER(Boolean.class),
         INPUT_CHANNEL(InputChannel.class),
-        INPUT_AUDIO_MODE(AudioMode.class),
         OUTPUT_SAMPLE_RATE(SampleRate.class),
         OUTPUT_CHANNEL(OutputChannel.class),
-        OUTPUT_AUDIO_MODE(AudioMode.class),
         CALLSIGN(String.class),
         ;
 

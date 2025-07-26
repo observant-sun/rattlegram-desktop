@@ -33,13 +33,13 @@ public class Encoder implements AutoCloseable {
 
     private native void destroyEncoder(long encoderHandle);
 
-    public Encoder(int sampleRate) {
+    public Encoder(int sampleRate, int channelCount) {
         this.sampleRate = sampleRate;
         encoderHandle = createNewEncoder(sampleRate);
         symbolLength = (1280 * sampleRate) / 8000;
         guardLength = symbolLength / 8;
         extendedLength = symbolLength + guardLength;
-        outputBuffer = new short[extendedLength];
+        outputBuffer = new short[extendedLength * channelCount];
     }
 
     public void configure(byte[] payload, byte[] callSign, int carrierFrequency, int noiseSymbols, boolean fancyHeader) {
@@ -52,7 +52,6 @@ public class Encoder implements AutoCloseable {
         for (int i = 0; i < repeatCount; i++) {
             boolean okay = this.produceEncoder(this.encoderHandle, outputBuffer, channelSelect);
             if (!okay) {
-                log.error("Produce encoder failed. channelSelect={}, repeatCount={}, encoderHandle={}, outputBuffer.length={}", channelSelect, repeatCount, encoderHandle, outputBuffer.length);
                 break;
             }
             byte[] bytes = Utils.shortArrayToNewByteArray(outputBuffer);
