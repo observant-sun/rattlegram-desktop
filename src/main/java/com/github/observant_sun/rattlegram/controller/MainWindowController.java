@@ -48,11 +48,11 @@ public class MainWindowController implements Initializable {
         });
 
         model = Model.get();
-        model.initializeEncoders();
         model.addNewMessageCallback(this::processNewMessage);
         model.addStatusUpdateCallback(this::processStatusUpdate);
         model.addTransmissionBeginCallback(this::processTransmissionBegin);
         model.addListeningBeginCallback(this::processListeningBegin);
+        model.initializeEncoders();
     }
 
     private void processNewMessage(Message message) {
