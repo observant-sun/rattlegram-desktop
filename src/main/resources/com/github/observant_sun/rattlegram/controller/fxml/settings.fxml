@@ -22,7 +22,7 @@
         <ChoiceBox fx:id="outputSampleRateChoiceBox" />
         <Label fx:id="carrierFrequencySpinnerLabel" text="Carrier frequency"/>
         <Spinner fx:id="carrierFrequencySpinner" amountToStepBy="10" min="1000" max="2000" />
-        <Label fx:id="leadingNoiseChoiceBoxLabel" text="Noise duration" />
+        <Label fx:id="leadingNoiseChoiceBoxLabel" text="Leading noise" />
         <ChoiceBox fx:id="leadingNoiseChoiceBox" />
         <Label fx:id="fancyHeaderCheckBoxLabel" text="Fancy header" />
         <CheckBox fx:id="fancyHeaderCheckBox" />
