@@ -240,7 +240,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_processDecoder(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_github_observant_sun_Decoder_spectrumDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_Decoder_spectrumDecoder(
 	JNIEnv *env,
 	jobject,
 	jlong decoderHandle,

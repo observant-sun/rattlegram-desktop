@@ -10,7 +10,13 @@ import com.github.observant_sun.rattlegram.entity.StatusUpdate;
 import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelBuffer;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritableImage;
+import lombok.extern.slf4j.Slf4j;
 
+import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+@Slf4j
 public class Model {
 
     private static final class InstanceHolder {
@@ -47,6 +54,9 @@ public class Model {
     private List<Runnable> transmissionBeginCallbacks = new ArrayList<>();
     private List<Runnable> listeningBeginCallbacks = new ArrayList<>();
 
+    private List<Consumer<Image>> updateSpectrumCallbacks = new ArrayList<>();
+
+
     private Model() {
 
     }
@@ -70,8 +80,9 @@ public class Model {
         final int inputChannelCount = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getChannelCount();
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
+        Runnable spectrumUpdateCallback = this::updateSpectrum;
         AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);
-        this.decoder = new Decoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, audioInputHandler);
+        this.decoder = new Decoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, spectrumUpdateCallback, audioInputHandler);
         this.decoder.start();
         processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening"));
     }
@@ -162,6 +173,22 @@ public class Model {
 
     public void pauseRecording() {
         decoder.pause();
+    }
+
+    public void addUpdateSpectrumCallback(Consumer<Image> updateSpectrumCallback) {
+        this.updateSpectrumCallbacks.add(updateSpectrumCallback);
+    }
+
+    private void updateSpectrum() {
+        final int spectrumWidth = 360, spectrumHeight = 128;
+        final int spectrogramWidth = 360, spectrogramHeight = 128;
+        final int spectrumTint = 255; // TODO
+        int[] spectrumImagePixels = decoder.spectrumDecoder(spectrumTint);
+        PixelBuffer<IntBuffer> intBufferPixelBuffer = new PixelBuffer<>(spectrumWidth, spectrumHeight, IntBuffer.wrap(spectrumImagePixels), PixelFormat.getIntArgbPreInstance());
+        Image spectrumImage = new WritableImage(intBufferPixelBuffer);
+        for (Consumer<Image> callback : updateSpectrumCallbacks) {
+            callback.accept(spectrumImage);
+        }
     }
 
 }

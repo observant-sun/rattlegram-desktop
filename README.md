@@ -30,6 +30,7 @@ A file `build/distributions/rattlegram-desktop-{version}-{platform}.zip` should 
 
 ## TODO
 * Decoder spectrum
+* Windows and Mac support
 * i18n and l10n
 * Repeater mode
 * Input validation

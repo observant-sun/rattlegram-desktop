@@ -26,6 +26,16 @@ public class RattlegramLauncher extends Application {
         primaryStage.setScene(mainScene);
         primaryStage.show();
         primaryStage.setOnCloseRequest(e -> Platform.exit());
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("controller/fxml/spectrum.fxml"));
+        Parent parent = loader.load();
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.UTILITY);
+        stage.setTitle("Spectrum");
+        width = 800;
+        height = 400;
+        stage.setScene(new Scene(parent, width, height));
+        stage.show();
     }
 
     private Parent getParent() throws IOException {

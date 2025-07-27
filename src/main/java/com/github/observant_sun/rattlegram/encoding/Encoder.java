@@ -17,12 +17,6 @@ public class Encoder implements AutoCloseable {
         System.loadLibrary("rattlegram");
     }
 
-
-    private final int sampleRate;
-    private final int symbolLength;
-    private final int guardLength;
-    private final int extendedLength;
-
     private short[] outputBuffer;
 
     private long encoderHandle;
@@ -36,12 +30,12 @@ public class Encoder implements AutoCloseable {
     private native void destroyEncoder(long encoderHandle);
 
     public Encoder(int sampleRate, int channelCount) {
-        this.sampleRate = sampleRate;
-        encoderHandle = createNewEncoder(sampleRate);
-        symbolLength = (1280 * sampleRate) / 8000;
-        guardLength = symbolLength / 8;
-        extendedLength = symbolLength + guardLength;
-        outputBuffer = new short[extendedLength * channelCount];
+        this.encoderHandle = createNewEncoder(sampleRate);
+
+        int symbolLength = (1280 * sampleRate) / 8000;
+        int guardLength = symbolLength / 8;
+        int extendedLength = symbolLength + guardLength;
+        this.outputBuffer = new short[extendedLength * channelCount];
     }
 
     public void configure(byte[] payload, byte[] callSign, int carrierFrequency, int noiseSymbols, boolean fancyHeader) {

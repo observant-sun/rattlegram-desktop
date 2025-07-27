@@ -7,6 +7,7 @@ module rattlegram {
     requires org.slf4j;
     requires java.desktop;
     requires java.prefs;
+    requires static lombok;
 
     opens com.github.observant_sun.rattlegram.controller to javafx.fxml;
     exports com.github.observant_sun.rattlegram;

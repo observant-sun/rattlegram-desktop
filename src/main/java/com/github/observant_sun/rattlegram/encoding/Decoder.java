@@ -19,6 +19,9 @@ import java.util.function.Consumer;
 // TODO: refactor
 public class Decoder implements AutoCloseable {
 
+    private static final int spectrumWidth = 360, spectrumHeight = 128;
+    private static final int spectrogramWidth = 360, spectrogramHeight = 128;
+
     private static final Logger log = LoggerFactory.getLogger(Decoder.class);
 
     static {
@@ -35,28 +38,34 @@ public class Decoder implements AutoCloseable {
     private short[] transformedAudioInputBuffer;
 
     private long decoderHandle;
+    private AtomicBoolean updateSpectrum = new AtomicBoolean(true);
 
     private int recordCount;
 
     private final Consumer<Message> newMessageCallback;
     private final Consumer<StatusUpdate> statusUpdateCallback;
+    private final Runnable spectrumUpdateCallback;
 
     private final float[] stagedCFO = new float[1];
     private final int[] stagedMode = new int[1];
     private final byte[] stagedCall = new byte[10];
     private final byte[] payload = new byte[170];
 
+    private final int[] spectrumPixels = new int[spectrumWidth * spectrumHeight];
+    private final int[] spectrogramPixels = new int[spectrogramHeight * spectrogramWidth];
+
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final Semaphore runSemaphore = new Semaphore(1);
 
     public Decoder(int sampleRate, int recordChannel, int channelCount,
                    Consumer<Message> newMessageCallback, Consumer<StatusUpdate> statusUpdateCallback,
-                   AudioInputHandler audioInputHandler) {
+                   Runnable spectrumUpdateCallback, AudioInputHandler audioInputHandler) {
         this.sampleRate = sampleRate;
         this.recordChannel = recordChannel;
         this.channelCount = channelCount;
         this.newMessageCallback = newMessageCallback;
         this.statusUpdateCallback = statusUpdateCallback;
+        this.spectrumUpdateCallback = spectrumUpdateCallback;
         this.audioInputHandler = audioInputHandler;
         init();
     }
@@ -70,6 +79,15 @@ public class Decoder implements AutoCloseable {
         Thread decoderThread = new Thread(this::run);
         decoderThread.setDaemon(true);
         decoderThread.start();
+    }
+
+    public void setUpdateSpectrum(boolean updateSpectrum) {
+        this.updateSpectrum.set(updateSpectrum);
+    }
+
+    public int[] spectrumDecoder(int spectrumTint) {
+        spectrumDecoder(this.decoderHandle, spectrumPixels, spectrogramPixels, spectrumTint);
+        return spectrumPixels;
     }
 
     private native boolean feedDecoder(long decoderHandle, short[] audioBuffer, int sampleCount, int channelSelect);
@@ -120,7 +138,9 @@ public class Decoder implements AutoCloseable {
         if (!feedDecoder(decoderHandle, transformedAudioInputBuffer, recordCount, recordChannel))
             return;
         int status = processDecoder(decoderHandle);
-
+        if (updateSpectrum.get()) {
+            spectrumUpdateCallback.run();
+        }
         final int STATUS_OKAY = 0;
         final int STATUS_FAIL = 1;
         final int STATUS_SYNC = 2;
