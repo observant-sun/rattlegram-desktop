@@ -1,15 +1,13 @@
 package com.github.observant_sun.rattlegram.audio;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Slf4j
 public class AudioInputHandler implements AutoCloseable {
-
-    private static final Logger log = LoggerFactory.getLogger(AudioInputHandler.class);
 
     private TargetDataLine line;
     private AudioInputStream audioInputStream;

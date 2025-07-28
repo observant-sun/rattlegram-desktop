@@ -1,19 +1,17 @@
 package com.github.observant_sun.rattlegram.prefs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+@Slf4j
 public class AppPreferences {
 
-    private static final Logger log = LoggerFactory.getLogger(AppPreferences.class);
-
     private final Properties defaults;
-
 
     private AppPreferences() {
         defaults = new Properties();
@@ -23,11 +21,12 @@ public class AppPreferences {
             ex.printStackTrace();
         }
         for (Pref pref : Pref.values()) {
-            Object defaultValue = defaults.get(pref.toString());
+            Object defaultValue = defaults.get(pref.name());
             if (defaultValue == null) {
-                log.warn("Default value for {} is undefined", pref);
+                log.warn("Default value for {} is undefined", pref.name());
             }
         }
+        synchronizeVersions();
     }
 
     private static final class InstanceHolder {
@@ -36,6 +35,24 @@ public class AppPreferences {
 
     public static AppPreferences get() {
         return InstanceHolder.instance;
+    }
+
+    private void synchronizeVersions() {
+        int savedVersion = Preferences.userRoot().getInt(Pref.PREFERENCES_VERSION.name(), -1);
+        int actualVersion = Integer.parseInt(defaults.getProperty(Pref.PREFERENCES_VERSION.name()));
+        if (savedVersion == -1 || savedVersion != actualVersion) {
+            clear();
+            Preferences.userRoot().putInt(Pref.PREFERENCES_VERSION.name(), actualVersion);
+        }
+    }
+
+    private void clear() {
+        try {
+            Preferences.userRoot().clear();
+        } catch (BackingStoreException e) {
+            log.error("Clear default preferences failed", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void set(Pref key, Object value) {
@@ -56,7 +73,7 @@ public class AppPreferences {
     }
 
     public <T> T get(Pref key, Class<T> prefValueClass) {
-        log.debug("get setting {} as {}", key, prefValueClass.getName());
+        log.debug("get setting {} as {}", key.name(), prefValueClass.getName());
         if (!key.getPrefClass().equals(prefValueClass)) {
             throw new IllegalArgumentException("Invalid class for key " + key.name() + ": " + prefValueClass);
         }

@@ -5,16 +5,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.TilePane;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
 import java.util.*;
 
+@Slf4j
 public class SettingsWindowController implements Initializable {
-
-    private static final Logger log = LoggerFactory.getLogger(SettingsWindowController.class);
-
 
     @FXML private TilePane tilePane;
     @FXML private Label inputSampleRateChoiceBoxLabel;
@@ -31,6 +28,8 @@ public class SettingsWindowController implements Initializable {
     @FXML private ChoiceBox<SampleRate> outputSampleRateChoiceBox;
     @FXML private Label outputChannelChoiceBoxLabel;
     @FXML private ChoiceBox<OutputChannel> outputChannelChoiceBox;
+    @FXML private Label stopListeningWhenTransmittingCheckBoxLabel;
+    @FXML private CheckBox stopListeningWhenTransmittingCheckBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -65,6 +64,8 @@ public class SettingsWindowController implements Initializable {
         fancyHeaderCheckBox.setSelected(fancyHeader);
         OutputChannel outputChannel = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class);
         outputChannelChoiceBox.setValue(outputChannel);
+        Boolean stopListeningWhenTransmitting = prefs.get(Pref.STOP_LISTENING_WHEN_TRANSMITTING, Boolean.class);
+        stopListeningWhenTransmittingCheckBox.setSelected(stopListeningWhenTransmitting);
     }
 
     public void saveSettings() {
@@ -84,6 +85,8 @@ public class SettingsWindowController implements Initializable {
         prefs.set(Pref.FANCY_HEADER, fancyHeader);
         OutputChannel outputChannel = outputChannelChoiceBox.getValue();
         prefs.set(Pref.OUTPUT_CHANNEL, outputChannel);
+        Boolean stopListeningWhenTransmitting = stopListeningWhenTransmittingCheckBox.isSelected();
+        prefs.set(Pref.STOP_LISTENING_WHEN_TRANSMITTING, stopListeningWhenTransmitting);
     }
 
 }

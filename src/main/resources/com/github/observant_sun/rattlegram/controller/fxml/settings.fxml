@@ -39,5 +39,9 @@
             <Label fx:id="outputChannelChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.outputChannelChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="outputChannelChoiceBox"/>
         </HBox>
+        <HBox spacing="10">
+            <Label fx:id="stopListeningWhenTransmittingCheckBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.stopListeningWhenTransmittingCheckBoxLabel.text"/>
+            <CheckBox fx:id="stopListeningWhenTransmittingCheckBox"/>
+        </HBox>
     </TilePane>
 </AnchorPane>

@@ -5,6 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum Pref {
+    // increment PREFERENCES_VERSION in default-preferences.properties if there are incompatible changes
+    PREFERENCES_VERSION(Integer.class),
     INPUT_SAMPLE_RATE(SampleRate.class),
     CARRIER_FREQUENCY(Integer.class),
     LEADING_NOISE(LeadingNoise.class),
@@ -14,6 +16,7 @@ public enum Pref {
     OUTPUT_CHANNEL(OutputChannel.class),
     CALLSIGN(String.class),
     SHOW_SPECTRUM_ANALYZER(Boolean.class),
+    STOP_LISTENING_WHEN_TRANSMITTING(Boolean.class),
     ;
 
     private final Class<?> prefClass;

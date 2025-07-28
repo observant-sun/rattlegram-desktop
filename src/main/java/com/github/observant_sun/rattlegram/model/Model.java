@@ -162,14 +162,19 @@ public class Model {
     }
 
     private void playAudioOutputBytes(byte[] arr) {
+        Boolean stopListeningWhenTransmitting = AppPreferences.get().get(Pref.STOP_LISTENING_WHEN_TRANSMITTING, Boolean.class);
         transmissionBeginCallbacks.forEach(Runnable::run);
         Platform.runLater(() -> processStatusUpdate(new StatusUpdate(StatusType.OK, "Transmitting")));
 
-        decoder.pause();
+        if (stopListeningWhenTransmitting) {
+            decoder.pause();
+        }
 
         audioOutputHandler.play(arr);
 
-        decoder.resume();
+        if (stopListeningWhenTransmitting) {
+            decoder.resume();
+        }
 
         listeningBeginCallbacks.forEach(Runnable::run);
     }
