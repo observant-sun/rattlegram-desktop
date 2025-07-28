@@ -1,5 +1,6 @@
 package com.github.observant_sun.rattlegram.controller;
 
+import com.github.observant_sun.rattlegram.i18n.I18n;
 import com.github.observant_sun.rattlegram.model.Model;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -27,11 +28,12 @@ public class SpectrumAnalyzerWindowStarter {
             return;
         }
         started = true;
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/spectrum.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/spectrum.fxml"), I18n.get().getResourceBundle());
         Parent parent = loader.load();
         stage = new Stage();
         stage.setResizable(false);
-        stage.setTitle("Spectrum Analyzer");
+        String title = I18n.get().getMessage(SpectrumAnalyzerWindowStarter.class, "windowTitle");
+        stage.setTitle(title);
         Scene spectrogramScene = new Scene(parent);
         stage.setScene(spectrogramScene);
         stage.setOnCloseRequest(event -> Model.get().showSpectrumAnalyzerProperty().set(false));

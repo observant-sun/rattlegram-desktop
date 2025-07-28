@@ -1,5 +1,9 @@
 package com.github.observant_sun.rattlegram.prefs;
 
+import com.github.observant_sun.rattlegram.i18n.I18n;
+import lombok.Getter;
+
+@Getter
 public enum LeadingNoise {
     DISABLED(0),
     QUARTER_SECOND(1),
@@ -15,7 +19,8 @@ public enum LeadingNoise {
         this.noiseSymbols = noiseSymbols;
     }
 
-    public int getNoiseSymbols() {
-        return noiseSymbols;
+    @Override
+    public String toString() {
+        return I18n.get().getMessage(this);
     }
 }

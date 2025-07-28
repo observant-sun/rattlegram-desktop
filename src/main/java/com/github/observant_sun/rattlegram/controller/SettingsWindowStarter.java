@@ -1,5 +1,6 @@
 package com.github.observant_sun.rattlegram.controller;
 
+import com.github.observant_sun.rattlegram.i18n.I18n;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,13 +21,14 @@ public class SettingsWindowStarter {
     }
 
     public void start(Runnable updatePreferencesCallback) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/settings.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/settings.fxml"), I18n.get().getResourceBundle());
         Parent parent = loader.load();
         SettingsWindowController controller = loader.getController();
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setTitle("Preferences");
+        String title = I18n.get().getMessage(SettingsWindowStarter.class, "windowTitle");
+        stage.setTitle(title);
         int width = 800;
         int height = 400;
         stage.setScene(new Scene(parent, width, height));

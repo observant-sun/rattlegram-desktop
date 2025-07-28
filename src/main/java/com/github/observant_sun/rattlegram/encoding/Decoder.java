@@ -5,6 +5,7 @@ import com.github.observant_sun.rattlegram.entity.MessageType;
 import com.github.observant_sun.rattlegram.entity.StatusType;
 import com.github.observant_sun.rattlegram.entity.StatusUpdate;
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
+import com.github.observant_sun.rattlegram.i18n.I18n;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritablePixelFormat;
@@ -42,7 +43,7 @@ public class Decoder implements AutoCloseable {
     private short[] transformedAudioInputBuffer;
 
     private long decoderHandle;
-    private AtomicBoolean updateSpectrum = new AtomicBoolean(true);
+    private final AtomicBoolean updateSpectrum = new AtomicBoolean(true);
 
     private int recordCount;
 
@@ -168,20 +169,24 @@ public class Decoder implements AutoCloseable {
             case STATUS_OKAY:
                 break;
             case STATUS_FAIL:
-                statusUpdateCallback.accept(new StatusUpdate(StatusType.ERROR, "Preamble failed"));
+                String preambleFailedMsg = I18n.get().getMessage(Decoder.class, "preambleFailed");
+                statusUpdateCallback.accept(new StatusUpdate(StatusType.ERROR, preambleFailedMsg));
                 break;
             case STATUS_NOPE:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
-                newMessageCallback.accept(new Message(getCallsign(), "Mode %s unsupported".formatted(stagedMode[0]), LocalDateTime.now(), MessageType.ERROR));
+                String modeUnsupportedMsg = I18n.get().getMessage(Decoder.class, "modeUnsupported");
+                newMessageCallback.accept(new Message(getCallsign(), modeUnsupportedMsg.formatted(stagedMode[0]), LocalDateTime.now(), MessageType.ERROR));
                 break;
             case STATUS_PING:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
-                newMessageCallback.accept(new Message(getCallsign(), "Got ping", LocalDateTime.now(), MessageType.OK));
+                String gotPingMsg = I18n.get().getMessage(Decoder.class, "gotPing");
+                newMessageCallback.accept(new Message(getCallsign(), gotPingMsg, LocalDateTime.now(), MessageType.OK));
                 break;
             case STATUS_HEAP:
-                statusUpdateCallback.accept(new StatusUpdate(StatusType.ERROR, "Not enough memory"));
+                String notEnoughMemoryMsg = I18n.get().getMessage(Decoder.class, "notEnoughMemory");
+                statusUpdateCallback.accept(new StatusUpdate(StatusType.ERROR, notEnoughMemoryMsg));
                 break;
             case STATUS_SYNC:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
@@ -190,9 +195,11 @@ public class Decoder implements AutoCloseable {
             case STATUS_DONE:
                 int result = fetchDecoder(decoderHandle, payload);
                 if (result < 0) {
-                    newMessageCallback.accept(new Message(getCallsign(), "Decoding failed", LocalDateTime.now(), MessageType.ERROR));
+                    String decodingFailedMsg = I18n.get().getMessage(Decoder.class, "decodingFailed");
+                    newMessageCallback.accept(new Message(getCallsign(), decodingFailedMsg, LocalDateTime.now(), MessageType.ERROR));
                 } else {
-                    statusUpdateCallback.accept(new StatusUpdate(StatusType.OK, "%d bit flips corrected".formatted(result)));
+                    String bitFlipsCorrectedMsg = I18n.get().getMessage(Decoder.class, "bitFlipsCorrected");
+                    statusUpdateCallback.accept(new StatusUpdate(StatusType.OK, bitFlipsCorrectedMsg.formatted(result)));
                     newMessageCallback.accept(new Message(getCallsign(), new String(payload).trim(), LocalDateTime.now(), MessageType.OK));
                 }
                 break;
@@ -210,8 +217,9 @@ public class Decoder implements AutoCloseable {
     }
 
     private void fromStatus() {
+        String fromMsg = I18n.get().getMessage(Decoder.class, "from");
         statusUpdateCallback.accept(
-                new StatusUpdate(StatusType.OK, "From %1$s - Mode %2$d - CFO %3$.2f Hz".formatted(new String(stagedCall).trim(), stagedMode[0], stagedCFO[0]))
+                new StatusUpdate(StatusType.OK, fromMsg.formatted(new String(stagedCall).trim(), stagedMode[0], stagedCFO[0]))
         );
     }
 

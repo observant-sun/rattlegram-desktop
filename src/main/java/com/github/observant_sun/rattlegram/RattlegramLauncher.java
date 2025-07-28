@@ -1,6 +1,6 @@
 package com.github.observant_sun.rattlegram;
 
-import com.github.observant_sun.rattlegram.prefs.AppPreferences;
+import com.github.observant_sun.rattlegram.i18n.I18n;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -36,7 +36,7 @@ public class RattlegramLauncher extends Application {
             throw new MissingResourceException("Failed to load main.fxml",
                     RattlegramLauncher.class.getName(), mainFXMLPath);
         }
-        return FXMLLoader.load(mainFXMLResource);
+        return FXMLLoader.load(mainFXMLResource, I18n.get().getResourceBundle());
     }
 
     public static void main(String[] args) {

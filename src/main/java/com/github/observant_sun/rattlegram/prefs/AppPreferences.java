@@ -1,6 +1,5 @@
 package com.github.observant_sun.rattlegram.prefs;
 
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,27 +13,6 @@ public class AppPreferences {
     private static final Logger log = LoggerFactory.getLogger(AppPreferences.class);
 
     private final Properties defaults;
-
-    @Getter
-    public enum Pref {
-        INPUT_SAMPLE_RATE(SampleRate.class),
-        CARRIER_FREQUENCY(Integer.class),
-        LEADING_NOISE(LeadingNoise.class),
-        FANCY_HEADER(Boolean.class),
-        INPUT_CHANNEL(InputChannel.class),
-        OUTPUT_SAMPLE_RATE(SampleRate.class),
-        OUTPUT_CHANNEL(OutputChannel.class),
-        CALLSIGN(String.class),
-        SHOW_SPECTRUM_ANALYZER(Boolean.class),
-        ;
-
-        private final Class<?> prefClass;
-
-        Pref(Class<?> prefClass) {
-            this.prefClass = prefClass;
-        }
-
-    }
 
 
     private AppPreferences() {
@@ -61,34 +39,34 @@ public class AppPreferences {
     }
 
     public void set(Pref key, Object value) {
-        log.debug("set setting {} to {}", key, value);
+        log.debug("set setting {} to {}", key.name(), value);
         Preferences prefs = Preferences.userRoot();
         if (value == null) {
-            throw new NullPointerException("value is null for key " + key);
+            throw new NullPointerException("value is null for key " + key.name());
         }
         if (!key.getPrefClass().isInstance(value)) {
-            throw new IllegalArgumentException("Invalid value for key " + key + ": " + value);
+            throw new IllegalArgumentException("Invalid value for key " + key.name() + ": " + value);
         }
         if (value instanceof Enum) {
-            prefs.put(key.toString(), ((Enum<?>) value).name());
+            prefs.put(key.name(), ((Enum<?>) value).name());
             return;
         }
-        prefs.put(key.toString(), value.toString());
+        prefs.put(key.name(), value.toString());
 
     }
 
     public <T> T get(Pref key, Class<T> prefValueClass) {
         log.debug("get setting {} as {}", key, prefValueClass.getName());
         if (!key.getPrefClass().equals(prefValueClass)) {
-            throw new IllegalArgumentException("Invalid class for key " + key + ": " + prefValueClass);
+            throw new IllegalArgumentException("Invalid class for key " + key.name() + ": " + prefValueClass);
         }
         Preferences prefs = Preferences.userRoot();
-        String value = prefs.get(key.toString(), null);
+        String value = prefs.get(key.name(), null);
         if (value == null) {
-            value = defaults.getProperty(key.toString());
+            value = defaults.getProperty(key.name());
         }
         if (value == null) {
-            throw new IllegalArgumentException("Value for key " + key + " is undefined");
+            throw new IllegalArgumentException("Value for key " + key.name() + " is undefined");
         }
         if (Enum.class.isAssignableFrom(prefValueClass)) {
             @SuppressWarnings("unchecked")

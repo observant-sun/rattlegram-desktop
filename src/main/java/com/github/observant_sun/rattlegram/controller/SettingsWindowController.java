@@ -51,19 +51,19 @@ public class SettingsWindowController implements Initializable {
         log.debug("load preferences");
         AppPreferences prefs = AppPreferences.get();
 
-        SampleRate inputSampleRate = prefs.get(AppPreferences.Pref.INPUT_SAMPLE_RATE, SampleRate.class);
+        SampleRate inputSampleRate = prefs.get(Pref.INPUT_SAMPLE_RATE, SampleRate.class);
         inputSampleRateChoiceBox.setValue(inputSampleRate);
-        InputChannel inputChannel = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class);
+        InputChannel inputChannel = prefs.get(Pref.INPUT_CHANNEL, InputChannel.class);
         inputChannelChoiceBox.setValue(inputChannel);
-        SampleRate outputSampleRate = prefs.get(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, SampleRate.class);
+        SampleRate outputSampleRate = prefs.get(Pref.OUTPUT_SAMPLE_RATE, SampleRate.class);
         outputSampleRateChoiceBox.setValue(outputSampleRate);
-        Integer carrierFrequency = prefs.get(AppPreferences.Pref.CARRIER_FREQUENCY, Integer.class);
+        Integer carrierFrequency = prefs.get(Pref.CARRIER_FREQUENCY, Integer.class);
         carrierFrequencySpinner.getValueFactory().setValue(carrierFrequency);
-        LeadingNoise leadingNoise = prefs.get(AppPreferences.Pref.LEADING_NOISE, LeadingNoise.class);
+        LeadingNoise leadingNoise = prefs.get(Pref.LEADING_NOISE, LeadingNoise.class);
         leadingNoiseChoiceBox.setValue(leadingNoise);
-        Boolean fancyHeader = prefs.get(AppPreferences.Pref.FANCY_HEADER, Boolean.class);
+        Boolean fancyHeader = prefs.get(Pref.FANCY_HEADER, Boolean.class);
         fancyHeaderCheckBox.setSelected(fancyHeader);
-        OutputChannel outputChannel = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class);
+        OutputChannel outputChannel = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class);
         outputChannelChoiceBox.setValue(outputChannel);
     }
 
@@ -71,19 +71,19 @@ public class SettingsWindowController implements Initializable {
         log.debug("save preferences");
         AppPreferences prefs = AppPreferences.get();
         SampleRate inputSampleRate = inputSampleRateChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.INPUT_SAMPLE_RATE, inputSampleRate);
+        prefs.set(Pref.INPUT_SAMPLE_RATE, inputSampleRate);
         InputChannel inputChannel = inputChannelChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.INPUT_CHANNEL, inputChannel);
+        prefs.set(Pref.INPUT_CHANNEL, inputChannel);
         SampleRate outputSampleRate = outputSampleRateChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, outputSampleRate);
+        prefs.set(Pref.OUTPUT_SAMPLE_RATE, outputSampleRate);
         Integer carrierFrequency = carrierFrequencySpinner.getValue();
-        prefs.set(AppPreferences.Pref.CARRIER_FREQUENCY, carrierFrequency);
+        prefs.set(Pref.CARRIER_FREQUENCY, carrierFrequency);
         LeadingNoise leadingNoise = leadingNoiseChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.LEADING_NOISE, leadingNoise);
+        prefs.set(Pref.LEADING_NOISE, leadingNoise);
         Boolean fancyHeader = fancyHeaderCheckBox.isSelected();
-        prefs.set(AppPreferences.Pref.FANCY_HEADER, fancyHeader);
+        prefs.set(Pref.FANCY_HEADER, fancyHeader);
         OutputChannel outputChannel = outputChannelChoiceBox.getValue();
-        prefs.set(AppPreferences.Pref.OUTPUT_CHANNEL, outputChannel);
+        prefs.set(Pref.OUTPUT_CHANNEL, outputChannel);
     }
 
 }

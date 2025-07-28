@@ -12,31 +12,31 @@
     <TilePane fx:id="tilePane" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.leftAnchor="10"
               AnchorPane.bottomAnchor="10">
         <HBox spacing="10">
-            <Label fx:id="inputSampleRateChoiceBoxLabel" text="Input sample rate"/>
+            <Label fx:id="inputSampleRateChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.inputSampleRateChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="inputSampleRateChoiceBox"/>
         </HBox>
         <HBox spacing="10">
-            <Label fx:id="inputChannelChoiceBoxLabel" text="Input channel"/>
+            <Label fx:id="inputChannelChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.inputChannelChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="inputChannelChoiceBox"/>
         </HBox>
         <HBox spacing="10">
-            <Label fx:id="outputSampleRateChoiceBoxLabel" text="Output sample rate"/>
+            <Label fx:id="outputSampleRateChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.outputSampleRateChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="outputSampleRateChoiceBox"/>
         </HBox>
         <HBox spacing="10">
-            <Label fx:id="carrierFrequencySpinnerLabel" text="Carrier frequency"/>
+            <Label fx:id="carrierFrequencySpinnerLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.carrierFrequencySpinnerLabel.text"/>
             <Spinner fx:id="carrierFrequencySpinner" amountToStepBy="10" min="1000" max="2000"/>
         </HBox>
         <HBox spacing="10">
-            <Label fx:id="leadingNoiseChoiceBoxLabel" text="Leading noise"/>
+            <Label fx:id="leadingNoiseChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.leadingNoiseChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="leadingNoiseChoiceBox"/>
         </HBox>
         <HBox spacing="10">
-            <Label fx:id="fancyHeaderCheckBoxLabel" text="Fancy header"/>
+            <Label fx:id="fancyHeaderCheckBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.fancyHeaderCheckBoxLabel.text"/>
             <CheckBox fx:id="fancyHeaderCheckBox"/>
         </HBox>
         <HBox spacing="10">
-            <Label fx:id="outputChannelChoiceBoxLabel" text="Output channel"/>
+            <Label fx:id="outputChannelChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.outputChannelChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="outputChannelChoiceBox"/>
         </HBox>
     </TilePane>

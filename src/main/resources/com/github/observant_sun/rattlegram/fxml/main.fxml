@@ -16,9 +16,9 @@
           AnchorPane.rightAnchor="0">
         <ButtonBar fx:id="topButtonBar" AnchorPane.topAnchor="0">
             <buttons>
-                <Button fx:id="showSpectrogrumAnalyzerButton" text="Show spectrogram" onMouseClicked="#toggleShowSpectrumAnalyzerWindowProperty">
+                <Button fx:id="showSpectrogramAnalyzerButton" text="%com.github.observant_sun.rattlegram.controller.MainWindowController.showSpectrogramAnalyzerButton.text" onMouseClicked="#toggleShowSpectrumAnalyzerWindowProperty">
                 </Button>
-                <Button fx:id="settingsButton" text="Settings" onMouseClicked="#showSettingsWindow">
+                <Button fx:id="settingsButton" text="%com.github.observant_sun.rattlegram.controller.MainWindowController.settingsButton.text" onMouseClicked="#showSettingsWindow">
                 </Button>
             </buttons>
         </ButtonBar>
@@ -27,12 +27,12 @@
         <TextArea fx:id="messagesTextArea" editable="false" minWidth="400" VBox.vgrow="ALWAYS">
         </TextArea>
         <HBox fx:id="hBox" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" VBox.vgrow="NEVER" minHeight="30">
-            <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="Callsign" prefWidth="120" maxWidth="120">
+            <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="%com.github.observant_sun.rattlegram.controller.MainWindowController.callsignBox.promptText" prefWidth="120" maxWidth="120">
                 <font>
                     <Font name="SansSerif Regular" size="14.0"/>
                 </font>
             </TextField>
-            <TextField fx:id="messageBox" onKeyPressed="#sendMethod" promptText="Enter message..."
+            <TextField fx:id="messageBox" onKeyPressed="#sendMethod" promptText="%com.github.observant_sun.rattlegram.controller.MainWindowController.messageBox.promptText"
                        HBox.hgrow="ALWAYS" prefWidth="599">
                 <font>
                     <Font name="SansSerif Regular" size="14.0"/>

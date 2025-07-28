@@ -1,6 +1,7 @@
 package com.github.observant_sun.rattlegram.controller;
 
 import com.github.observant_sun.rattlegram.entity.*;
+import com.github.observant_sun.rattlegram.i18n.I18n;
 import com.github.observant_sun.rattlegram.model.Model;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
@@ -10,8 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,14 +20,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 
+@Slf4j
 public class MainWindowController implements Initializable {
-
-    private static final Logger log = LoggerFactory.getLogger(MainWindowController.class);
 
     @FXML
     private ButtonBar topButtonBar;
     @FXML
-    private Button showSpectrogrumAnalyzerButton;
+    private Button showSpectrogramAnalyzerButton;
     @FXML
     private Button settingsButton;
     @FXML
@@ -49,7 +48,7 @@ public class MainWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        String callsign = AppPreferences.get().get(AppPreferences.Pref.CALLSIGN, String.class);
+        String callsign = AppPreferences.get().get(Pref.CALLSIGN, String.class);
         this.callsignBox.setText(callsign);
 
         this.callsignBox.focusedProperty().addListener((observable, oldValue, newValue) -> {
@@ -79,7 +78,13 @@ public class MainWindowController implements Initializable {
     }
 
     private void setShowSpectrogramButtonText(boolean showSpectrogram) {
-        showSpectrogrumAnalyzerButton.setText(showSpectrogram ? "Hide spectrum analyzer" : "Show spectrum analyzer");
+        String buttonText;
+        if (showSpectrogram) {
+            buttonText = I18n.get().getMessage(MainWindowController.class, "hideSpectrumAnalyzer");
+        } else {
+            buttonText = I18n.get().getMessage(MainWindowController.class, "showSpectrumAnalyzer");
+        }
+        showSpectrogramAnalyzerButton.setText(buttonText);
     }
 
     private void processNewMessage(Message message) {
@@ -94,11 +99,17 @@ public class MainWindowController implements Initializable {
 
     private void processTransmissionBegin() {
         Platform.runLater(() ->
-                processStatusUpdate(new StatusUpdate(StatusType.OK, "Transmitting")));
+        {
+            String statusUpdateString = I18n.get().getMessage(MainWindowController.class, "transmissionBeginStatus");
+            processStatusUpdate(new StatusUpdate(StatusType.OK, statusUpdateString));
+        });
     }
 
     private void processListeningBegin() {
-        Platform.runLater(() -> processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening")));
+        Platform.runLater(() -> {
+            String statusUpdateString = I18n.get().getMessage(MainWindowController.class, "listeningBeginStatus");
+            processStatusUpdate(new StatusUpdate(StatusType.OK, statusUpdateString));
+        });
     }
 
     public void sendMethod(KeyEvent keyEvent) {
@@ -131,7 +142,7 @@ public class MainWindowController implements Initializable {
 
     private void saveCallsign() {
         String text = this.callsignBox.getText();
-        AppPreferences.get().set(AppPreferences.Pref.CALLSIGN, text);
+        AppPreferences.get().set(Pref.CALLSIGN, text);
     }
 
     public void toggleShowSpectrumAnalyzerWindowProperty() {

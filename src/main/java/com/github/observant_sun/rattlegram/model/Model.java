@@ -65,8 +65,8 @@ public class Model {
 
     public void initializeEncoders() {
         AppPreferences prefs = AppPreferences.get();
-        final int outputSampleRate = prefs.get(AppPreferences.Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
-        final int outputChannelCount = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
+        final int outputSampleRate = prefs.get(Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
+        final int outputChannelCount = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
 
         this.encoder = new Encoder(outputSampleRate, outputChannelCount);
         this.audioOutputHandler = new AudioOutputHandler(outputSampleRate, outputChannelCount);
@@ -77,9 +77,9 @@ public class Model {
             return thread;
         });
 
-        final int inputSampleRate = prefs.get(AppPreferences.Pref.INPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
-        final int inputChannel = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getIntValue();
-        final int inputChannelCount = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getChannelCount();
+        final int inputSampleRate = prefs.get(Pref.INPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
+        final int inputChannel = prefs.get(Pref.INPUT_CHANNEL, InputChannel.class).getIntValue();
+        final int inputChannelCount = prefs.get(Pref.INPUT_CHANNEL, InputChannel.class).getChannelCount();
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
         Runnable spectrumUpdateCallback = this::updateSpectrogram;
@@ -125,10 +125,10 @@ public class Model {
         byte[] callsignBytes = getCallsignBytes(callsign);
 
         AppPreferences prefs = AppPreferences.get();
-        final int carrierFrequency = prefs.get(AppPreferences.Pref.CARRIER_FREQUENCY, Integer.class);
-        final int noiseSymbols = prefs.get(AppPreferences.Pref.LEADING_NOISE, LeadingNoise.class).getNoiseSymbols();
-        final boolean fancyHeader = prefs.get(AppPreferences.Pref.FANCY_HEADER, Boolean.class);
-        final int channelSelect = prefs.get(AppPreferences.Pref.OUTPUT_CHANNEL, OutputChannel.class).getIntValue();
+        final int carrierFrequency = prefs.get(Pref.CARRIER_FREQUENCY, Integer.class);
+        final int noiseSymbols = prefs.get(Pref.LEADING_NOISE, LeadingNoise.class).getNoiseSymbols();
+        final boolean fancyHeader = prefs.get(Pref.FANCY_HEADER, Boolean.class);
+        final int channelSelect = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getIntValue();
         TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect);
         encoderThread.submit(() -> {
             byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes, transmissionSettings);
@@ -199,11 +199,11 @@ public class Model {
         if (showSpectrumAnalyzer == null) {
             synchronized (this) {
                 if (showSpectrumAnalyzer == null) {
-                    boolean initialValue = AppPreferences.get().get(AppPreferences.Pref.SHOW_SPECTRUM_ANALYZER, Boolean.class);
+                    boolean initialValue = AppPreferences.get().get(Pref.SHOW_SPECTRUM_ANALYZER, Boolean.class);
                     showSpectrumAnalyzer = new SimpleBooleanProperty(this, "showSpectrogram", initialValue);
                     showSpectrumAnalyzer.addListener((observable, oldValue, newValue) -> {
                         decoder.setUpdateSpectrum(newValue);
-                        AppPreferences.get().set(AppPreferences.Pref.SHOW_SPECTRUM_ANALYZER, newValue);
+                        AppPreferences.get().set(Pref.SHOW_SPECTRUM_ANALYZER, newValue);
                     });
                 }
             }
