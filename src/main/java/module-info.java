@@ -5,6 +5,7 @@ module rattlegram {
     requires javafx.graphics;
     requires javafx.media;
     requires org.slf4j;
+    requires ch.qos.logback.classic;
     requires java.desktop;
     requires java.prefs;
     requires static lombok;
