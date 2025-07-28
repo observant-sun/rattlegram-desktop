@@ -1,5 +1,6 @@
 package com.github.observant_sun.rattlegram.prefs;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,7 @@ public class AppPreferences {
 
     private final Properties defaults;
 
+    @Getter
     public enum Pref {
         INPUT_SAMPLE_RATE(SampleRate.class),
         CARRIER_FREQUENCY(Integer.class),
@@ -23,16 +25,13 @@ public class AppPreferences {
         OUTPUT_SAMPLE_RATE(SampleRate.class),
         OUTPUT_CHANNEL(OutputChannel.class),
         CALLSIGN(String.class),
+        SHOW_SPECTRUM_ANALYZER(Boolean.class),
         ;
 
         private final Class<?> prefClass;
 
         Pref(Class<?> prefClass) {
             this.prefClass = prefClass;
-        }
-
-        public Class<?> getPrefClass() {
-            return prefClass;
         }
 
     }

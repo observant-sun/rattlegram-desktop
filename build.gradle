@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'com.github.observant_sun'
-version = '0.2.0'
+version = '0.3.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -20,12 +20,19 @@ java {
 }
 
 dependencies {
+//    implementation("com.google.guava:guava:32.0.1-android")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation("org.slf4j:slf4j-api:1.7.36")
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.5.18")
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
     implementation("ch.qos.logback:logback-core:1.5.18")
+//
+//    // https://mvnrepository.com/artifact/com.google.inject/guice
+//    implementation("com.google.inject:guice:7.0.0")
+//    // https://mvnrepository.com/artifact/com.gluonhq/ignite-guice
+//    implementation("com.gluonhq:ignite-guice:1.2.2")
+
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -45,9 +52,12 @@ javafx {
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.media' ]
 }
 
+var javaHome = System.getProperty("java.home")
+
 model {
 
     components {
+        var includePlatformSubfolder = "linux"
         rattlegram(NativeLibrarySpec) {
             binaries.all {
                 cppCompiler.args '-std=c++17'
@@ -55,8 +65,8 @@ model {
                 cppCompiler.args '-ffast-math'
                 cppCompiler.args '-fno-exceptions'
                 cppCompiler.args '-fno-rtti'
-                cppCompiler.args '-I', "/usr/lib/jvm/java-21/include"
-                cppCompiler.args '-I', "/usr/lib/jvm/java-21/include/linux"
+                cppCompiler.args '-I', "${javaHome}/include"
+                cppCompiler.args '-I', "${javaHome}/include/${includePlatformSubfolder}"
                 cppCompiler.args '-fPIC'
                 cppCompiler.args '-D_REENTRANT'
             }

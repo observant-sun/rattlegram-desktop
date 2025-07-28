@@ -10,9 +10,10 @@ import com.github.observant_sun.rattlegram.entity.StatusUpdate;
 import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelBuffer;
-import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,12 +40,9 @@ public class Model {
     private Encoder encoder;
     private Decoder decoder;
 
-    private AudioInputHandler audioInputHandler;
     private AudioOutputHandler audioOutputHandler;
 
     private ExecutorService encoderThread;
-
-    private final AppPreferences prefs = AppPreferences.get();
 
     private List<Message> messages = new ArrayList<>();
     private List<Consumer<Message>> newMessageCallbacks = new ArrayList<>();
@@ -54,8 +52,12 @@ public class Model {
     private List<Runnable> transmissionBeginCallbacks = new ArrayList<>();
     private List<Runnable> listeningBeginCallbacks = new ArrayList<>();
 
-    private List<Consumer<Image>> updateSpectrumCallbacks = new ArrayList<>();
+    private List<Consumer<SpectrumImages>> updateSpectrogramCallbacks = new ArrayList<>();
 
+    public record SpectrumImages (
+            Image spectrum,
+            Image spectrogram
+    ) {}
 
     private Model() {
 
@@ -80,9 +82,10 @@ public class Model {
         final int inputChannelCount = prefs.get(AppPreferences.Pref.INPUT_CHANNEL, InputChannel.class).getChannelCount();
         Consumer<Message> newMessageCallback = this::processNewMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
-        Runnable spectrumUpdateCallback = this::updateSpectrum;
+        Runnable spectrumUpdateCallback = this::updateSpectrogram;
         AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);
         this.decoder = new Decoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, spectrumUpdateCallback, audioInputHandler);
+        this.decoder.setUpdateSpectrum(showSpectrumAnalyzerProperty().get());
         this.decoder.start();
         processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening"));
     }
@@ -175,20 +178,37 @@ public class Model {
         decoder.pause();
     }
 
-    public void addUpdateSpectrumCallback(Consumer<Image> updateSpectrumCallback) {
-        this.updateSpectrumCallbacks.add(updateSpectrumCallback);
+    public void addUpdateSpectrogramCallback(Consumer<SpectrumImages> updateSpectrogramCallback) {
+        this.updateSpectrogramCallbacks.add(updateSpectrogramCallback);
     }
 
-    private void updateSpectrum() {
-        final int spectrumWidth = 360, spectrumHeight = 128;
-        final int spectrogramWidth = 360, spectrogramHeight = 128;
-        final int spectrumTint = 255; // TODO
-        int[] spectrumImagePixels = decoder.spectrumDecoder(spectrumTint);
-        PixelBuffer<IntBuffer> intBufferPixelBuffer = new PixelBuffer<>(spectrumWidth, spectrumHeight, IntBuffer.wrap(spectrumImagePixels), PixelFormat.getIntArgbPreInstance());
-        Image spectrumImage = new WritableImage(intBufferPixelBuffer);
-        for (Consumer<Image> callback : updateSpectrumCallbacks) {
-            callback.accept(spectrumImage);
+    private void updateSpectrogram() {
+        Decoder.SpectrumDecoderResult spectrumDecoderResult = decoder.spectrumDecoder();
+        PixelBuffer<IntBuffer> spectrumPixels = spectrumDecoderResult.spectrumPixels();
+        Image spectrumImage = new WritableImage(spectrumPixels);
+        PixelBuffer<IntBuffer> spectrogramPixels = spectrumDecoderResult.spectrogramPixels();
+        Image spectrogramImage = new WritableImage(spectrogramPixels);
+        for (Consumer<SpectrumImages> callback : updateSpectrogramCallbacks) {
+            callback.accept(new SpectrumImages(spectrumImage, spectrogramImage));
         }
+    }
+
+    private volatile BooleanProperty showSpectrumAnalyzer;
+
+    public BooleanProperty showSpectrumAnalyzerProperty() {
+        if (showSpectrumAnalyzer == null) {
+            synchronized (this) {
+                if (showSpectrumAnalyzer == null) {
+                    boolean initialValue = AppPreferences.get().get(AppPreferences.Pref.SHOW_SPECTRUM_ANALYZER, Boolean.class);
+                    showSpectrumAnalyzer = new SimpleBooleanProperty(this, "showSpectrogram", initialValue);
+                    showSpectrumAnalyzer.addListener((observable, oldValue, newValue) -> {
+                        decoder.setUpdateSpectrum(newValue);
+                        AppPreferences.get().set(AppPreferences.Pref.SHOW_SPECTRUM_ANALYZER, newValue);
+                    });
+                }
+            }
+        }
+        return showSpectrumAnalyzer;
     }
 
 }

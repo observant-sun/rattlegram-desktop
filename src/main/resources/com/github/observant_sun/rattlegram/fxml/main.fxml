@@ -16,6 +16,8 @@
           AnchorPane.rightAnchor="0">
         <ButtonBar fx:id="topButtonBar" AnchorPane.topAnchor="0">
             <buttons>
+                <Button fx:id="showSpectrogrumAnalyzerButton" text="Show spectrogram" onMouseClicked="#toggleShowSpectrumAnalyzerWindowProperty">
+                </Button>
                 <Button fx:id="settingsButton" text="Settings" onMouseClicked="#showSettingsWindow">
                 </Button>
             </buttons>

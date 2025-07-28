@@ -5,11 +5,15 @@ import com.github.observant_sun.rattlegram.entity.MessageType;
 import com.github.observant_sun.rattlegram.entity.StatusType;
 import com.github.observant_sun.rattlegram.entity.StatusUpdate;
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
+import javafx.scene.image.PixelBuffer;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritablePixelFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
+import java.nio.IntBuffer;
 import java.time.LocalDateTime;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -85,9 +89,21 @@ public class Decoder implements AutoCloseable {
         this.updateSpectrum.set(updateSpectrum);
     }
 
-    public int[] spectrumDecoder(int spectrumTint) {
+    public record SpectrumDecoderResult (
+            PixelBuffer<IntBuffer> spectrumPixels,
+            PixelBuffer<IntBuffer> spectrogramPixels
+    ) {
+    }
+
+    public SpectrumDecoderResult spectrumDecoder() {
+        final int spectrumTint = 255;
         spectrumDecoder(this.decoderHandle, spectrumPixels, spectrogramPixels, spectrumTint);
-        return spectrumPixels;
+        IntBuffer spectrumPixelsIntBuffer = IntBuffer.wrap(spectrumPixels);
+        IntBuffer spectrogramPixelsIntBuffer = IntBuffer.wrap(spectrogramPixels);
+        WritablePixelFormat<IntBuffer> pixelFormat = PixelFormat.getIntArgbPreInstance();
+        PixelBuffer<IntBuffer> spectrumPixels = new PixelBuffer<>(spectrumWidth, spectrumHeight, spectrumPixelsIntBuffer, pixelFormat);
+        PixelBuffer<IntBuffer> spectrogramPixels = new PixelBuffer<>(spectrogramWidth, spectrogramHeight, spectrogramPixelsIntBuffer, pixelFormat);
+        return new SpectrumDecoderResult(spectrumPixels, spectrogramPixels);
     }
 
     private native boolean feedDecoder(long decoderHandle, short[] audioBuffer, int sampleCount, int channelSelect);

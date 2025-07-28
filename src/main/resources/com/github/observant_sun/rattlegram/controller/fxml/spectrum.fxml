@@ -9,10 +9,13 @@
 <?import javafx.scene.image.ImageView?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.github.observant_sun.rattlegram.controller.SpectrumWindowController"
-            fx:id="rootAnchorPane" prefHeight="400.0" prefWidth="600.0">
-    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10"
-          AnchorPane.rightAnchor="10" AnchorPane.topAnchor="10" fx:id="hBox" >
-        <ImageView fx:id="spectrumImageView" VBox.vgrow="ALWAYS" />
-    </HBox>
+            fx:controller="com.github.observant_sun.rattlegram.controller.SpectrumAnalyzerWindowController"
+            fx:id="rootAnchorPane" prefHeight="276" prefWidth="380">
+    <VBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="10"
+          fx:id="vBox"
+          maxWidth="360" minWidth="360"
+          maxHeight="256" minHeight="256" >
+        <ImageView fx:id="spectrumImageView" VBox.vgrow="ALWAYS"/>
+        <ImageView fx:id="spectrogramImageView" VBox.vgrow="ALWAYS"/>
+    </VBox>
 </AnchorPane>

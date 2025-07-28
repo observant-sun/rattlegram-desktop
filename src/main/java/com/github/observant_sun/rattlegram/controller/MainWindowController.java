@@ -24,15 +24,26 @@ public class MainWindowController implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(MainWindowController.class);
 
-    @FXML private ButtonBar topButtonBar;
-    @FXML private Button settingsButton;
-    @FXML private HBox hBox;
-    @FXML private Label statusLabel;
-    @FXML private AnchorPane anchorPane;
-    @FXML private VBox vBox;
-    @FXML private TextArea messagesTextArea;
-    @FXML private TextField callsignBox;
-    @FXML private TextField messageBox;
+    @FXML
+    private ButtonBar topButtonBar;
+    @FXML
+    private Button showSpectrogrumAnalyzerButton;
+    @FXML
+    private Button settingsButton;
+    @FXML
+    private HBox hBox;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private AnchorPane anchorPane;
+    @FXML
+    private VBox vBox;
+    @FXML
+    private TextArea messagesTextArea;
+    @FXML
+    private TextField callsignBox;
+    @FXML
+    private TextField messageBox;
 
     private Model model;
 
@@ -47,12 +58,28 @@ public class MainWindowController implements Initializable {
             }
         });
 
+        try {
+            SpectrumAnalyzerWindowStarter.get().start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         model = Model.get();
+        boolean showSpectrogram = model.showSpectrumAnalyzerProperty().get();
+        setShowSpectrogramButtonText(showSpectrogram);
+        model.showSpectrumAnalyzerProperty().subscribe(value -> {
+            Platform.runLater(() -> setShowSpectrogramButtonText(value));
+        });
+
         model.addNewMessageCallback(this::processNewMessage);
         model.addStatusUpdateCallback(this::processStatusUpdate);
         model.addTransmissionBeginCallback(this::processTransmissionBegin);
         model.addListeningBeginCallback(this::processListeningBegin);
         model.initializeEncoders();
+    }
+
+    private void setShowSpectrogramButtonText(boolean showSpectrogram) {
+        showSpectrogrumAnalyzerButton.setText(showSpectrogram ? "Hide spectrum analyzer" : "Show spectrum analyzer");
     }
 
     private void processNewMessage(Message message) {
@@ -93,7 +120,6 @@ public class MainWindowController implements Initializable {
     }
 
     public void showSettingsWindow() {
-        // TODO: if settings are opened while transmitting, recording will be resumed
         model.pauseRecording();
         try {
             Runnable updatePreferencesCallback = () -> model.reinitializeEncoders();
@@ -106,5 +132,9 @@ public class MainWindowController implements Initializable {
     private void saveCallsign() {
         String text = this.callsignBox.getText();
         AppPreferences.get().set(AppPreferences.Pref.CALLSIGN, text);
+    }
+
+    public void toggleShowSpectrumAnalyzerWindowProperty() {
+        model.showSpectrumAnalyzerProperty().set(!model.showSpectrumAnalyzerProperty().get());
     }
 }
