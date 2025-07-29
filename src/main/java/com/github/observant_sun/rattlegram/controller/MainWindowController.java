@@ -53,9 +53,42 @@ public class MainWindowController implements Initializable {
 
         this.callsignBox.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
+                this.callsignBox.setText(this.callsignBox.getText().trim());
                 saveCallsign();
             }
         });
+
+        TextFormatter<Object> callsignBoxTextFormatter = new TextFormatter<>(change -> {
+            log.debug("Callsign change: {}", change.getText());
+            if (change.getText() == null || change.getText().isEmpty()) {
+                return change;
+            }
+            String controlNewText = change.getControlNewText();
+            int MAX_CALLSIGN_LENGTH = 10;
+            if (controlNewText.length() > MAX_CALLSIGN_LENGTH) {
+                change.setText("");
+                return change;
+            }
+            change.setText(change.getText().toUpperCase().replaceAll("[^ A-Z0-9]", ""));
+            return change;
+        });
+        this.callsignBox.setTextFormatter(callsignBoxTextFormatter);
+
+        this.messageBox.setTextFormatter(new TextFormatter<>(change -> {
+            String changeText = change.getText();
+            log.debug("Message change: {}", changeText);
+            if (changeText == null || changeText.isEmpty()) {
+                return change;
+            }
+            String controlNewText = change.getControlNewText();
+            int MAX_MESSAGE_LENGTH = 170;
+            if (controlNewText.length() > MAX_MESSAGE_LENGTH) {
+                int diff = controlNewText.length() - MAX_MESSAGE_LENGTH;
+                changeText = changeText.substring(0, changeText.length() - diff);
+                change.setText(changeText);
+            }
+            return change;
+        }));
 
         try {
             SpectrumAnalyzerWindowStarter.get().start();

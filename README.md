@@ -32,5 +32,4 @@ A file `build/distributions/rattlegram-desktop-{version}-{platform}.zip` should 
 * Add some tests
 * Windows and Mac support
 * Repeater mode
-* Input validation
 * Add localizations
