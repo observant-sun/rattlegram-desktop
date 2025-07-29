@@ -75,14 +75,23 @@ model {
     }
 }
 
-task copyCppLibsToJLinkImage {
+tasks.register('copyCppLibsToJLinkImage') {
+    dependsOn 'rattlegramSharedLibrary', 'jlink'
     group = 'distribution'
     doLast {
         copy {
-            from "${buildDir}/libs/rattlegram/shared/librattlegram.so"
-            into "${buildDir}/image/applib/"
+            from "${buildDir}/libs/rattlegram/shared"
+            include '**/*.so', '**/*.dll'
+            into "${buildDir}/image/bin/"
         }
     }
+    description "Copies compiled C++ objects into jlink image"
+}
+
+tasks.register('dist') {
+    group = 'distribution'
+    dependsOn clean, jlinkZip
+    description "Calls clean and then jlinkZip"
 }
 
 jlink {
@@ -90,19 +99,18 @@ jlink {
     launcher {
         name = 'rattlegram-desktop'
         jvmArgs = [
-                '-Djava.library.path={{BIN_DIR}}/../applib'
+                '-Djava.library.path={{BIN_DIR}}'
         ]
     }
 }
 
-jlinkZip { dependsOn(copyCppLibsToJLinkImage)
+jlinkZip {
+    dependsOn(copyCppLibsToJLinkImage)
     group = 'distribution'
 }
 
 run.dependsOn 'rattlegramSharedLibrary'
 classes.dependsOn 'rattlegramSharedLibrary'
-copyCppLibsToJLinkImage.dependsOn 'rattlegramSharedLibrary'
-copyCppLibsToJLinkImage.dependsOn 'jlink'
 
 test {
     useJUnitPlatform()
