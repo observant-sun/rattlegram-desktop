@@ -18,7 +18,7 @@ public class AppPreferences {
         try (InputStream input = getClass().getResourceAsStream("default-preferences.properties")) {
             defaults.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error(ex.getMessage(), ex);
         }
         for (Pref pref : Pref.values()) {
             Object defaultValue = defaults.get(pref.name());
@@ -37,18 +37,20 @@ public class AppPreferences {
         return InstanceHolder.instance;
     }
 
+    private final Preferences prefs = Preferences.userNodeForPackage(AppPreferences.class);
+
     private void synchronizeVersions() {
-        int savedVersion = Preferences.userRoot().getInt(Pref.PREFERENCES_VERSION.name(), -1);
+        int savedVersion = prefs.getInt(Pref.PREFERENCES_VERSION.name(), -1);
         int actualVersion = Integer.parseInt(defaults.getProperty(Pref.PREFERENCES_VERSION.name()));
         if (savedVersion == -1 || savedVersion != actualVersion) {
             clear();
-            Preferences.userRoot().putInt(Pref.PREFERENCES_VERSION.name(), actualVersion);
+            prefs.putInt(Pref.PREFERENCES_VERSION.name(), actualVersion);
         }
     }
 
     private void clear() {
         try {
-            Preferences.userRoot().clear();
+            prefs.clear();
         } catch (BackingStoreException e) {
             log.error("Clear default preferences failed", e);
             throw new RuntimeException(e);
@@ -57,7 +59,6 @@ public class AppPreferences {
 
     public void set(Pref key, Object value) {
         log.debug("set setting {} to {}", key.name(), value);
-        Preferences prefs = Preferences.userRoot();
         if (value == null) {
             throw new NullPointerException("value is null for key " + key.name());
         }
@@ -77,7 +78,6 @@ public class AppPreferences {
         if (!key.getPrefClass().equals(prefValueClass)) {
             throw new IllegalArgumentException("Invalid class for key " + key.name() + ": " + prefValueClass);
         }
-        Preferences prefs = Preferences.userRoot();
         String value = prefs.get(key.name(), null);
         if (value == null) {
             value = defaults.getProperty(key.name());
