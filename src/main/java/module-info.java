@@ -9,6 +9,7 @@ module rattlegram {
     requires java.desktop;
     requires java.prefs;
     requires static lombok;
+    requires com.google.common;
 
     opens com.github.observant_sun.rattlegram.controller to javafx.fxml;
     exports com.github.observant_sun.rattlegram;

@@ -4,14 +4,12 @@ import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.encoding.Decoder;
 import com.github.observant_sun.rattlegram.encoding.Encoder;
-import com.github.observant_sun.rattlegram.entity.Message;
-import com.github.observant_sun.rattlegram.entity.StatusType;
-import com.github.observant_sun.rattlegram.entity.StatusUpdate;
-import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
+import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.WritableImage;
@@ -19,11 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -42,9 +40,12 @@ public class Model {
 
     private AudioOutputHandler audioOutputHandler;
 
-    private ExecutorService encoderThread;
+    private ScheduledExecutorService encoderThread;
 
     private List<Message> messages = new ArrayList<>();
+    private ObservableList<Message> incomingMessages = FXCollections.observableArrayList();
+    private IncomingMessagesRepeatValidator incomingMessagesRepeatValidator;
+
     private List<Consumer<Message>> newMessageCallbacks = new ArrayList<>();
     private List<StatusUpdate> statusUpdates = new ArrayList<>();
     private List<Consumer<StatusUpdate>> statusUpdateCallbacks = new ArrayList<>();
@@ -65,13 +66,18 @@ public class Model {
 
     public void initializeEncoders() {
         AppPreferences prefs = AppPreferences.get();
+
+        final int debounceDurationMs = prefs.get(Pref.REPEATER_DEBOUNCE_TIME, Integer.class);
+        final Duration debounceDuration = Duration.ofMillis(debounceDurationMs);
+        incomingMessagesRepeatValidator = new IncomingMessagesRepeatValidator(incomingMessages, debounceDuration);
+
         final int outputSampleRate = prefs.get(Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
         final int outputChannelCount = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
 
         this.encoder = new Encoder(outputSampleRate, outputChannelCount);
         this.audioOutputHandler = new AudioOutputHandler(outputSampleRate, outputChannelCount);
 
-        this.encoderThread = Executors.newSingleThreadExecutor((runnable) -> {
+        this.encoderThread = Executors.newSingleThreadScheduledExecutor((runnable) -> {
             Thread thread = new Thread(runnable, "encoder-thread");
             thread.setDaemon(true);
             return thread;
@@ -80,7 +86,7 @@ public class Model {
         final int inputSampleRate = prefs.get(Pref.INPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
         final int inputChannel = prefs.get(Pref.INPUT_CHANNEL, InputChannel.class).getIntValue();
         final int inputChannelCount = prefs.get(Pref.INPUT_CHANNEL, InputChannel.class).getChannelCount();
-        Consumer<Message> newMessageCallback = this::processNewMessage;
+        Consumer<Message> newMessageCallback = this::processNewIncomingMessage;
         Consumer<StatusUpdate> statusUpdateCallback = this::processStatusUpdate;
         Runnable spectrumUpdateCallback = this::updateSpectrogram;
         AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);
@@ -90,10 +96,25 @@ public class Model {
         processStatusUpdate(new StatusUpdate(StatusType.OK, "Listening"));
     }
 
-    private void processNewMessage(Message message) {
-        messages.add(message);
+    private void processNewIncomingMessage(Message incomingMessage) {
+        log.debug("processNewIncomingMessage: {}", incomingMessage);
+        incomingMessages.add(incomingMessage);
+        if (repeaterModeEnabledProperty().getValue()) {
+            boolean validForRepeat = incomingMessagesRepeatValidator.isValidForRepeat(incomingMessage);
+            if (!validForRepeat) {
+                statusUpdateCallbacks.add(statusUpdate -> new StatusUpdate(StatusType.IGNORED, "Ignoring repeated message"));
+                return;
+            }
+            AppPreferences prefs = AppPreferences.get();
+            Integer delay = prefs.get(Pref.REPEATER_DELAY, Integer.class);
+            if (delay <= 0) {
+                delay = null;
+            }
+            log.debug("delay: {} ms", delay);
+            transmitNewMessage(incomingMessage.callsign(), incomingMessage.body(), delay);
+        }
         for (Consumer<Message> callback : newMessageCallbacks) {
-            callback.accept(message);
+            callback.accept(incomingMessage);
         }
     }
 
@@ -120,7 +141,8 @@ public class Model {
         this.listeningBeginCallbacks.add(listeningBeginCallback);
     }
 
-    public void transmitNewMessage(String callsign, String message) {
+    // TODO refactor
+    public void transmitNewMessage(String callsign, String message, Integer delay) {
         byte[] payload = getPayload(message);
         byte[] callsignBytes = getCallsignBytes(callsign);
 
@@ -130,10 +152,15 @@ public class Model {
         final boolean fancyHeader = prefs.get(Pref.FANCY_HEADER, Boolean.class);
         final int channelSelect = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getIntValue();
         TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect);
-        encoderThread.submit(() -> {
+        Runnable runnable = () -> {
             byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes, transmissionSettings);
             playAudioOutputBytes(audioOutputBytes);
-        });
+        };
+        if (delay != null) {
+            encoderThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+        } else {
+            encoderThread.submit(runnable);
+        }
     }
 
     private void closeResources() {
@@ -199,7 +226,6 @@ public class Model {
     }
 
     private volatile BooleanProperty showSpectrumAnalyzer;
-
     public BooleanProperty showSpectrumAnalyzerProperty() {
         if (showSpectrumAnalyzer == null) {
             synchronized (this) {
@@ -214,6 +240,63 @@ public class Model {
             }
         }
         return showSpectrumAnalyzer;
+    }
+
+    private volatile BooleanProperty showRepeaterWindow = new SimpleBooleanProperty(false);
+    public BooleanProperty showRepeaterWindowProperty() {
+        return showRepeaterWindow;
+    }
+
+    public void toggleRepeaterWindow() {
+        showRepeaterWindow.set(!showRepeaterWindow.get());
+    }
+
+    private volatile BooleanProperty repeaterModeEnabled;
+    public BooleanProperty repeaterModeEnabledProperty() {
+        if (repeaterModeEnabled == null) {
+            synchronized (this) {
+                if (repeaterModeEnabled == null) {
+                    boolean initialValue = AppPreferences.get().get(Pref.REPEATER_MODE_ENABLED, Boolean.class);
+                    repeaterModeEnabled = new SimpleBooleanProperty(this, "repeaterModeEnabled", initialValue);
+                    repeaterModeEnabled.addListener((observable, oldValue, newValue) -> {
+                        AppPreferences.get().set(Pref.REPEATER_MODE_ENABLED, newValue);
+                    });
+                }
+            }
+        }
+        return repeaterModeEnabled;
+    }
+
+    private volatile IntegerProperty repeaterDelay;
+    public IntegerProperty repeaterDelayProperty() {
+        if (repeaterDelay == null) {
+            synchronized (this) {
+                if (repeaterDelay == null) {
+                    int initialValue = AppPreferences.get().get(Pref.REPEATER_DELAY, Integer.class);
+                    repeaterDelay = new SimpleIntegerProperty(this, "repeaterDelay", initialValue);
+                    repeaterDelay.addListener((observable, oldValue, newValue) -> {
+                        AppPreferences.get().set(Pref.REPEATER_DELAY, newValue);
+                    });
+                }
+            }
+        }
+        return repeaterDelay;
+    }
+
+    private volatile IntegerProperty repeaterDebounceTime;
+    public IntegerProperty repeaterDebounceTimeProperty() {
+        if (repeaterDebounceTime == null) {
+            synchronized (this) {
+                if (repeaterDebounceTime == null) {
+                    int initialValue = AppPreferences.get().get(Pref.REPEATER_DEBOUNCE_TIME, Integer.class);
+                    repeaterDebounceTime = new SimpleIntegerProperty(this, "repeaterDebounceTime", initialValue);
+                    repeaterDebounceTime.addListener((observable, oldValue, newValue) -> {
+                        AppPreferences.get().set(Pref.REPEATER_DEBOUNCE_TIME, newValue);
+                    });
+                }
+            }
+        }
+        return repeaterDebounceTime;
     }
 
 }

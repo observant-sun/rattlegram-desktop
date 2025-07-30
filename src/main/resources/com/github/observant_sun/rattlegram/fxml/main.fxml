@@ -16,6 +16,8 @@
           AnchorPane.rightAnchor="0">
         <ButtonBar fx:id="topButtonBar" AnchorPane.topAnchor="0">
             <buttons>
+                <Button fx:id="repeaterSettingsButton" text="%com.github.observant_sun.rattlegram.controller.MainWindowController.repeaterSettingsButton.text" onMouseClicked="#toggleRepeaterWindow">
+                </Button>
                 <Button fx:id="showSpectrogramAnalyzerButton" text="%com.github.observant_sun.rattlegram.controller.MainWindowController.showSpectrogramAnalyzerButton.text" onMouseClicked="#toggleShowSpectrumAnalyzerWindowProperty">
                 </Button>
                 <Button fx:id="settingsButton" text="%com.github.observant_sun.rattlegram.controller.MainWindowController.settingsButton.text" onMouseClicked="#showSettingsWindow">

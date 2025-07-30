@@ -1,9 +1,6 @@
 package com.github.observant_sun.rattlegram.encoding;
 
-import com.github.observant_sun.rattlegram.entity.Message;
-import com.github.observant_sun.rattlegram.entity.MessageType;
-import com.github.observant_sun.rattlegram.entity.StatusType;
-import com.github.observant_sun.rattlegram.entity.StatusUpdate;
+import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.i18n.I18n;
 import javafx.scene.image.PixelBuffer;
@@ -176,13 +173,13 @@ public class Decoder implements AutoCloseable {
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
                 String modeUnsupportedMsg = I18n.get().getMessage(Decoder.class, "modeUnsupported");
-                newMessageCallback.accept(new Message(getCallsign(), modeUnsupportedMsg.formatted(stagedMode[0]), LocalDateTime.now(), MessageType.ERROR));
+                newMessageCallback.accept(new Message(getCallsign(), null, modeUnsupportedMsg.formatted(stagedMode[0]), LocalDateTime.now(), MessageType.ERROR_INCOMING));
                 break;
             case STATUS_PING:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
                 String gotPingMsg = I18n.get().getMessage(Decoder.class, "gotPing");
-                newMessageCallback.accept(new Message(getCallsign(), gotPingMsg, LocalDateTime.now(), MessageType.OK));
+                newMessageCallback.accept(new Message(getCallsign(), null, gotPingMsg, LocalDateTime.now(), MessageType.PING_INCOMING));
                 break;
             case STATUS_HEAP:
                 String notEnoughMemoryMsg = I18n.get().getMessage(Decoder.class, "notEnoughMemory");
@@ -196,11 +193,11 @@ public class Decoder implements AutoCloseable {
                 int result = fetchDecoder(decoderHandle, payload);
                 if (result < 0) {
                     String decodingFailedMsg = I18n.get().getMessage(Decoder.class, "decodingFailed");
-                    newMessageCallback.accept(new Message(getCallsign(), decodingFailedMsg, LocalDateTime.now(), MessageType.ERROR));
+                    newMessageCallback.accept(new Message(getCallsign(), null, decodingFailedMsg, LocalDateTime.now(), MessageType.ERROR_INCOMING));
                 } else {
                     String bitFlipsCorrectedMsg = I18n.get().getMessage(Decoder.class, "bitFlipsCorrected");
                     statusUpdateCallback.accept(new StatusUpdate(StatusType.OK, bitFlipsCorrectedMsg.formatted(result)));
-                    newMessageCallback.accept(new Message(getCallsign(), new String(payload).trim(), LocalDateTime.now(), MessageType.OK));
+                    newMessageCallback.accept(new Message(getCallsign(), new String(payload).trim(), null, LocalDateTime.now(), MessageType.NORMAL_INCOMING));
                 }
                 break;
         }

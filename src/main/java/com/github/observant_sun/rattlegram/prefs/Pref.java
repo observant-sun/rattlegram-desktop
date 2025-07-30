@@ -17,6 +17,9 @@ public enum Pref {
     CALLSIGN(String.class),
     SHOW_SPECTRUM_ANALYZER(Boolean.class),
     STOP_LISTENING_WHEN_TRANSMITTING(Boolean.class),
+    REPEATER_MODE_ENABLED(Boolean.class),
+    REPEATER_DELAY(Integer.class),
+    REPEATER_DEBOUNCE_TIME(Integer.class),
     ;
 
     private final Class<?> prefClass;

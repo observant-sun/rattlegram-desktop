@@ -26,6 +26,8 @@ public class MainWindowController implements Initializable {
     @FXML
     private ButtonBar topButtonBar;
     @FXML
+    private Button repeaterSettingsButton;
+    @FXML
     private Button showSpectrogramAnalyzerButton;
     @FXML
     private Button settingsButton;
@@ -58,6 +60,7 @@ public class MainWindowController implements Initializable {
             }
         });
 
+        // TODO move to utils
         TextFormatter<Object> callsignBoxTextFormatter = new TextFormatter<>(change -> {
             log.debug("Callsign change: {}", change.getText());
             if (change.getText() == null || change.getText().isEmpty()) {
@@ -73,7 +76,8 @@ public class MainWindowController implements Initializable {
             return change;
         });
         this.callsignBox.setTextFormatter(callsignBoxTextFormatter);
-
+        // TODO move to utils
+        // TODO need to truncate to byte array length, not string length
         this.messageBox.setTextFormatter(new TextFormatter<>(change -> {
             String changeText = change.getText();
             log.debug("Message change: {}", changeText);
@@ -102,12 +106,24 @@ public class MainWindowController implements Initializable {
         model.showSpectrumAnalyzerProperty().subscribe(value -> {
             Platform.runLater(() -> setShowSpectrogramButtonText(value));
         });
+        setRepeaterSettingsButtonStyle(model.repeaterModeEnabledProperty().get());
+        model.repeaterModeEnabledProperty().addListener((observable, oldValue, newValue) -> {
+            setRepeaterSettingsButtonStyle(newValue);
+        });
 
         model.addNewMessageCallback(this::processNewMessage);
         model.addStatusUpdateCallback(this::processStatusUpdate);
         model.addTransmissionBeginCallback(this::processTransmissionBegin);
         model.addListeningBeginCallback(this::processListeningBegin);
         model.initializeEncoders();
+    }
+
+    private void setRepeaterSettingsButtonStyle(boolean repeaterEnabled) {
+        if (repeaterEnabled) {
+            repeaterSettingsButton.setStyle("-fx-background-color: #38c738");
+        } else {
+            repeaterSettingsButton.setStyle("-fx-background-color: #e85555");
+        }
     }
 
     private void setShowSpectrogramButtonText(boolean showSpectrogram) {
@@ -155,7 +171,7 @@ public class MainWindowController implements Initializable {
         messageBox.clear();
         messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message));
 
-        model.transmitNewMessage(callsign, message);
+        model.transmitNewMessage(callsign, message, null);
     }
 
 
@@ -180,5 +196,10 @@ public class MainWindowController implements Initializable {
 
     public void toggleShowSpectrumAnalyzerWindowProperty() {
         model.showSpectrumAnalyzerProperty().set(!model.showSpectrumAnalyzerProperty().get());
+    }
+
+    public void toggleRepeaterWindow() throws IOException {
+        RepeaterWindowStarter.get().start();
+        model.toggleRepeaterWindow();
     }
 }
