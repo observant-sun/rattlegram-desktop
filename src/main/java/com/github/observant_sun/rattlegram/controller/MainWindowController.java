@@ -137,8 +137,23 @@ public class MainWindowController implements Initializable {
     }
 
     private void processNewMessage(Message message) {
-        Platform.runLater(() ->
-                messagesTextArea.appendText(getMessageFormattedLine(message.timestamp(), message.callsign(), message.body())));
+        Platform.runLater(() -> {
+            String messageFormattedLine = null;
+            switch (message.type()) {
+                case NORMAL_INCOMING -> {
+                    messageFormattedLine = getMessageFormattedLine(message.timestamp(), message.callsign(), message.body(), ">>");
+                }
+                case ERROR_INCOMING -> {
+                    messageFormattedLine = getMessageFormattedLine(message.timestamp(), message.callsign(), message.decoderResult(), "!>");
+                }
+                case PING_INCOMING -> {
+                    messageFormattedLine = getMessageFormattedLine(message.timestamp(), message.callsign(), "<Received ping>", "P>");
+                }
+            }
+            if (messageFormattedLine != null) {
+                messagesTextArea.appendText(messageFormattedLine);
+            }
+        });
     }
 
     private void processStatusUpdate(StatusUpdate status) {
@@ -169,14 +184,17 @@ public class MainWindowController implements Initializable {
         String message = messageBox.getText();
 
         messageBox.clear();
-        messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message));
-
+        if (message.isEmpty()) {
+            messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, "<Sent ping>", "<P"));
+        } else {
+            messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message, "<<"));
+        }
         model.transmitNewMessage(callsign, message);
     }
 
 
-    private static String getMessageFormattedLine(LocalDateTime localDateTime, String callsign, String message) {
-        return "[%s] %s: %s\n".formatted(localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).withLocale(Locale.getDefault())), callsign, message);
+    private static String getMessageFormattedLine(LocalDateTime localDateTime, String callsign, String message, String directionString) {
+        return "[%s] %s %s: %s\n".formatted(localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).withLocale(Locale.getDefault())), directionString, callsign, message);
     }
 
     public void showSettingsWindow() {

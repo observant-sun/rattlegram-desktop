@@ -155,6 +155,9 @@ public class Model {
     }
 
     public void transmitNewMessage(String callsign, String message, Integer delay) {
+        if (callsign == null) callsign = "";
+        if (message == null) message = "";
+
         byte[] payload = getPayload(message);
         byte[] callsignBytes = getCallsignBytes(callsign);
 
