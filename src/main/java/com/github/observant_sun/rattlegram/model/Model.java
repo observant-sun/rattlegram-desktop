@@ -100,22 +100,31 @@ public class Model {
         log.debug("processNewIncomingMessage: {}", incomingMessage);
         incomingMessages.add(incomingMessage);
         if (repeaterModeEnabledProperty().getValue()) {
-            boolean validForRepeat = incomingMessagesRepeatValidator.isValidForRepeat(incomingMessage);
-            if (!validForRepeat) {
-                statusUpdateCallbacks.add(statusUpdate -> new StatusUpdate(StatusType.IGNORED, "Ignoring repeated message"));
-                return;
+            IncomingMessagesRepeatValidator.ValidationResult validationResult = incomingMessagesRepeatValidator.validate(incomingMessage);
+            switch (validationResult) {
+                case DEBOUNCE_INVALID ->
+                        statusUpdateCallbacks.add(statusUpdate -> new StatusUpdate(StatusType.IGNORED, "Ignoring repeated message"));
+                case INVALID_MESSAGE ->
+                        statusUpdateCallbacks.add(statusUpdate -> new StatusUpdate(StatusType.IGNORED, "Invalid message, will not repeat"));
+                case FAILED_MESSAGE -> {} // no-op
+                case VALID -> repeatMessage(incomingMessage);
+                case IS_OUTGOING_MESSAGE ->
+                        log.error("Somehow got an outgoing message in processNewIncomingMessage: {}", incomingMessage);
             }
-            AppPreferences prefs = AppPreferences.get();
-            Integer delay = prefs.get(Pref.REPEATER_DELAY, Integer.class);
-            if (delay <= 0) {
-                delay = null;
-            }
-            log.debug("delay: {} ms", delay);
-            transmitNewMessage(incomingMessage.callsign(), incomingMessage.body(), delay);
         }
         for (Consumer<Message> callback : newMessageCallbacks) {
             callback.accept(incomingMessage);
         }
+    }
+
+    private void repeatMessage(Message incomingMessage) {
+        AppPreferences prefs = AppPreferences.get();
+        Integer delay = prefs.get(Pref.REPEATER_DELAY, Integer.class);
+        if (delay <= 0) {
+            delay = null;
+        }
+        log.debug("repeat delay: {} ms", delay);
+        transmitNewMessage(incomingMessage.callsign(), incomingMessage.body(), delay);
     }
 
     private void processStatusUpdate(StatusUpdate statusUpdate) {
@@ -141,7 +150,10 @@ public class Model {
         this.listeningBeginCallbacks.add(listeningBeginCallback);
     }
 
-    // TODO refactor
+    public void transmitNewMessage(String callsign, String message) {
+        transmitNewMessage(callsign, message, null);
+    }
+
     public void transmitNewMessage(String callsign, String message, Integer delay) {
         byte[] payload = getPayload(message);
         byte[] callsignBytes = getCallsignBytes(callsign);

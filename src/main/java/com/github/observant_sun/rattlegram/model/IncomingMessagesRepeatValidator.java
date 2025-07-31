@@ -37,18 +37,26 @@ public class IncomingMessagesRepeatValidator {
                 .forEach(message -> keyToMessageMap.put(new CallsignBodyPair(message.callsign(), message.body()), message));
     }
 
-    public boolean isValidForRepeat(Message message) {
+    public enum ValidationResult {
+        VALID,
+        DEBOUNCE_INVALID,
+        IS_OUTGOING_MESSAGE,
+        FAILED_MESSAGE,
+        INVALID_MESSAGE,
+    }
+
+    public ValidationResult validate(Message message) {
         if (message.type().getDirection() == MessageType.Direction.OUTGOING) {
             log.debug("message {} direction is OUTGOING, invalid", message.type());
-            return false;
+            return ValidationResult.IS_OUTGOING_MESSAGE;
         }
         if (message.type().isFailed()) {
             log.debug("message {} is failed, invalid", message.type());
-            return false;
+            return ValidationResult.FAILED_MESSAGE;
         }
         if (message.callsign() == null || message.callsign().isEmpty()) {
             log.debug("message {} callsign is empty, invalid", message.type());
-            return false;
+            return ValidationResult.INVALID_MESSAGE;
         }
         CallsignBodyPair key = new CallsignBodyPair(message.callsign(), message.body());
         log.debug("key = {}", key);
@@ -57,7 +65,10 @@ public class IncomingMessagesRepeatValidator {
         messages.removeIf(m -> message.timestamp().isBefore(LocalDateTime.now().minus(debounceDuration)));
         boolean valid = messages.isEmpty();
         keyToMessageMap.put(key, message);
-        return valid;
+        if (!valid) {
+            return ValidationResult.DEBOUNCE_INVALID;
+        }
+        return ValidationResult.VALID;
     }
 
 

@@ -120,9 +120,9 @@ public class MainWindowController implements Initializable {
 
     private void setRepeaterSettingsButtonStyle(boolean repeaterEnabled) {
         if (repeaterEnabled) {
-            repeaterSettingsButton.setStyle("-fx-background-color: #38c738");
+            repeaterSettingsButton.setStyle("-fx-background-color: rgba(0,255,0,0.7)");
         } else {
-            repeaterSettingsButton.setStyle("-fx-background-color: #e85555");
+            repeaterSettingsButton.setStyle("");
         }
     }
 
@@ -171,7 +171,7 @@ public class MainWindowController implements Initializable {
         messageBox.clear();
         messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message));
 
-        model.transmitNewMessage(callsign, message, null);
+        model.transmitNewMessage(callsign, message);
     }
 
 
