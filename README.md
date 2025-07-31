@@ -1,6 +1,6 @@
 # rattlegram-desktop
 
-Based on https://github.com/aicodix/rattlegram.
+Desktop port of https://github.com/aicodix/rattlegram.
 
 Transceive UTF-8 text messages with up to 170 bytes over audio in about a second, on desktop, with a GUI.
 
@@ -15,7 +15,7 @@ Currently only works on Linux. Capable of sending and receiving.
 
 ### Prerequisites
 * JDK version >= 17
-* GCC (tested with version 15.1.1)
+* GCC
 
 ### Running from source code
 ```bash
@@ -25,11 +25,10 @@ Currently only works on Linux. Capable of sending and receiving.
 ### Making a distributable
 A file `build/distributions/rattlegram-desktop-{version}-{platform}.zip` should be created after you run the following command:
 ```bash
-./gradlew clean jlinkZip
+./gradlew dist
 ```
 
 ## TODO
 * Add some tests
 * Windows and Mac support
-* Repeater mode
 * Add localizations
