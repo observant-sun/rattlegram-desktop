@@ -1,6 +1,5 @@
 package com.github.observant_sun.rattlegram.encoding;
 
-import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.util.Utils;
 import lombok.Synchronized;
 import org.slf4j.Logger;
@@ -32,7 +31,6 @@ public class Encoder implements AutoCloseable {
     private native void destroyEncoder(long encoderHandle);
 
     public Encoder(int sampleRate, int channelCount) {
-        // TODO createNewEncoder returns the same long on every call, something wrong
         this.encoderHandle = createNewEncoder(sampleRate);
 
         int symbolLength = (1280 * sampleRate) / 8000;

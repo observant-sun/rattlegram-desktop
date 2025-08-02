@@ -28,11 +28,12 @@ public class Model {
     @Getter
     private final AtomicReference<Decoder> decoderReference = new AtomicReference<>();
 
+    @Getter
     private ObservableList<Message> messages = FXCollections.observableArrayList();
     @Getter
     private ObservableList<Message> incomingMessages = FXCollections.observableArrayList();
     @Getter
-    private ObservableList<Message> outgoingMessages = FXCollections.observableArrayList();
+    private final SimplePublisher<OutgoingMessage> newOutgoingMessagePublisher = new SimplePublisher<>();
 
     @Getter
     private final SimplePublisher<Message> newIncomingMessagePublisher = new SimplePublisher<>();

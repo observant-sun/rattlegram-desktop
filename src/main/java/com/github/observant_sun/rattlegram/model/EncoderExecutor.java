@@ -3,17 +3,12 @@ package com.github.observant_sun.rattlegram.model;
 import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.encoding.Decoder;
 import com.github.observant_sun.rattlegram.encoding.Encoder;
-import com.github.observant_sun.rattlegram.entity.StatusType;
-import com.github.observant_sun.rattlegram.entity.StatusUpdate;
 import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
 import com.github.observant_sun.rattlegram.prefs.AppPreferences;
 import com.github.observant_sun.rattlegram.prefs.Pref;
-import javafx.application.Platform;
 import lombok.Getter;
 
-import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class EncoderExecutor implements AutoCloseable {
 
@@ -34,8 +29,9 @@ public class EncoderExecutor implements AutoCloseable {
         });
     }
 
-    public void transmit(byte[] payload, byte[] callsignBytes, TransmissionSettings transmissionSettings) {
+    public void transmit(byte[] payload, byte[] callsignBytes, TransmissionSettings transmissionSettings, Runnable beforeTransmit) {
         Runnable runnable = () -> {
+            beforeTransmit.run();
             byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes, transmissionSettings);
             playAudioOutputBytes(audioOutputBytes);
         };

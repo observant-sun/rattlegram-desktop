@@ -2,10 +2,7 @@ package com.github.observant_sun.rattlegram.model;
 
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.encoding.Decoder;
-import com.github.observant_sun.rattlegram.entity.Message;
-import com.github.observant_sun.rattlegram.entity.SpectrumImages;
-import com.github.observant_sun.rattlegram.entity.StatusType;
-import com.github.observant_sun.rattlegram.entity.StatusUpdate;
+import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.prefs.AppPreferences;
 import com.github.observant_sun.rattlegram.prefs.InputChannel;
 import com.github.observant_sun.rattlegram.prefs.Pref;
@@ -76,7 +73,8 @@ public class DecoderInteractor {
 
     private void processNewIncomingMessage(Message incomingMessage) {
         log.debug("processNewIncomingMessage: {}", incomingMessage);
-        if (model.repeaterModeEnabledProperty().getValue()) {
+        Boolean repeaterModeEnabled = model.repeaterModeEnabledProperty().getValue();
+        if (repeaterModeEnabled) {
             IncomingMessagesRepeatValidator.ValidationResult validationResult = incomingMessagesRepeatValidator.validate(incomingMessage);
             switch (validationResult) {
                 case DEBOUNCE_INVALID ->
@@ -84,25 +82,24 @@ public class DecoderInteractor {
                 case INVALID_MESSAGE ->
                         model.getStatusUpdatePublisher().submit(new StatusUpdate(StatusType.IGNORED, "Invalid message, will not repeat"));
                 case FAILED_MESSAGE -> {} // no-op
-                case VALID -> {
-                    // repeatMessage(incomingMessage);
-                }
+                case VALID -> repeatMessage(incomingMessage);
                 case IS_OUTGOING_MESSAGE ->
                         log.error("Somehow got an outgoing message in processNewIncomingMessage: {}", incomingMessage);
             }
         }
-        model.getNewIncomingMessagePublisher().submit(incomingMessage);
+        model.getMessages().add(incomingMessage);
     }
 
-//    private void repeatMessage(Message incomingMessage) {
-//        AppPreferences prefs = AppPreferences.get();
-//        Integer delay = prefs.get(Pref.REPEATER_DELAY, Integer.class);
-//        if (delay <= 0) {
-//            delay = null;
-//        }
-//        log.debug("repeat delay: {} ms", delay);
-//        transmitNewMessage(incomingMessage.callsign(), incomingMessage.body(), delay);
-//    }
+    private void repeatMessage(Message message) {
+        AppPreferences prefs = AppPreferences.get();
+        Integer delay = prefs.get(Pref.REPEATER_DELAY, Integer.class);
+        if (delay <= 0) {
+            delay = null;
+        }
+        log.debug("repeat delay: {} ms", delay);
+        OutgoingMessage outgoingMessage = new OutgoingMessage(message.callsign(), message.body(), delay);
+        model.getNewOutgoingMessagePublisher().submit(outgoingMessage);
+    }
 
     private Decoder getDecoder() {
         return model.getDecoder();

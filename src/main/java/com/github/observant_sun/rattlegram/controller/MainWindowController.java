@@ -7,6 +7,7 @@ import com.github.observant_sun.rattlegram.model.EncoderInteractor;
 import com.github.observant_sun.rattlegram.model.Model;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -114,8 +115,11 @@ public class MainWindowController implements Initializable {
         model.repeaterModeEnabledProperty().addListener((observable, oldValue, newValue) -> {
             setRepeaterSettingsButtonStyle(newValue);
         });
-
-        model.getNewIncomingMessagePublisher().subscribe(this::processNewMessage);
+        // TODO switch to on-change approach
+        model.getMessages().addListener((InvalidationListener) observable -> {
+            messagesTextArea.clear();
+            model.getMessages().forEach(this::processNewMessage);
+        });
         model.getStatusUpdatePublisher().subscribe(this::processStatusUpdate);
         model.getTransmissionBeginPublisher().subscribe(this::processTransmissionBegin);
         model.getListeningBeginPublisher().subscribe(this::processListeningBegin);
@@ -155,6 +159,12 @@ public class MainWindowController implements Initializable {
                 case PING_INCOMING -> {
                     messageFormattedLine = getMessageFormattedLine(message.timestamp(), message.callsign(), "<Received ping>", "P>");
                 }
+                case NORMAL_OUTGOING -> {
+                    messageFormattedLine = getMessageFormattedLine(message.timestamp(), message.callsign(), message.body(), "<<");
+                }
+                case PING_OUTGOING -> {
+                    messageFormattedLine = getMessageFormattedLine(message.timestamp(), message.callsign(), "<Sent ping>", "P<");
+                }
             }
             if (messageFormattedLine != null) {
                 messagesTextArea.appendText(messageFormattedLine);
@@ -190,12 +200,7 @@ public class MainWindowController implements Initializable {
         String message = messageBox.getText();
 
         messageBox.clear();
-        if (message.isEmpty()) {
-            messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, "<Sent ping>", "<P"));
-        } else {
-            messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message, "<<"));
-        }
-        encoderInteractor.transmitNewMessage(callsign, message);
+        model.getNewOutgoingMessagePublisher().submit(new OutgoingMessage(callsign, message, null));
     }
 
 

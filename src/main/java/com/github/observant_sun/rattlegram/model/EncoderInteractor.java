@@ -2,11 +2,15 @@ package com.github.observant_sun.rattlegram.model;
 
 import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.encoding.Encoder;
+import com.github.observant_sun.rattlegram.entity.Message;
+import com.github.observant_sun.rattlegram.entity.MessageType;
+import com.github.observant_sun.rattlegram.entity.OutgoingMessage;
 import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
 import com.github.observant_sun.rattlegram.prefs.*;
 import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -19,6 +23,7 @@ public class EncoderInteractor {
 
     public EncoderInteractor(Model model) {
         this.model = model;
+        model.getNewOutgoingMessagePublisher().subscribe(this::transmitNewMessage);
     }
 
     public void init() {
@@ -34,16 +39,16 @@ public class EncoderInteractor {
         encoderExecutorRef.get().close();
     }
 
-    public void transmitNewMessage(String callsign, String message) {
-        transmitNewMessage(callsign, message, null);
-    }
+    public void transmitNewMessage(OutgoingMessage message) {
+        String callsign = message.callsign();
+        String body = message.body();
+        Integer delay = message.delay();
 
-    public void transmitNewMessage(String callsign, String message, Integer delay) {
-        if (callsign == null) callsign = "";
-        if (message == null) message = "";
+        final String callsignFinal = callsign == null ? "" : callsign;
+        final String bodyFinal = body == null ? "" : body;
 
-        byte[] payload = getPayload(message);
-        byte[] callsignBytes = getCallsignBytes(callsign);
+        byte[] payload = getPayload(bodyFinal);
+        byte[] callsignBytes = getCallsignBytes(callsignFinal);
 
         AppPreferences prefs = AppPreferences.get();
         final int carrierFrequency = prefs.get(Pref.CARRIER_FREQUENCY, Integer.class);
@@ -51,8 +56,11 @@ public class EncoderInteractor {
         final boolean fancyHeader = prefs.get(Pref.FANCY_HEADER, Boolean.class);
         final int channelSelect = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getIntValue();
         TransmissionSettings transmissionSettings = new TransmissionSettings(carrierFrequency, noiseSymbols, fancyHeader, channelSelect, delay);
-
-        getEncoderExecutor().transmit(payload, callsignBytes, transmissionSettings);
+        Runnable beforeTransmitRunnable = () -> {
+            MessageType messageType = bodyFinal.isEmpty() ? MessageType.PING_OUTGOING : MessageType.NORMAL_OUTGOING;
+            model.getMessages().add(new Message(callsignFinal, bodyFinal, null, LocalDateTime.now(), messageType));
+        };
+        getEncoderExecutor().transmit(payload, callsignBytes, transmissionSettings, beforeTransmitRunnable);
     }
 
     public EncoderExecutor getEncoderExecutor() {
@@ -67,7 +75,7 @@ public class EncoderInteractor {
         return Arrays.copyOf(callsign.getBytes(StandardCharsets.US_ASCII), callsign.length() + 1);
     }
 
-    private static byte[] getPayload(String message) {
-        return Arrays.copyOf(message.getBytes(StandardCharsets.UTF_8), 170);
+    private static byte[] getPayload(String body) {
+        return Arrays.copyOf(body.getBytes(StandardCharsets.UTF_8), 170);
     }
 }

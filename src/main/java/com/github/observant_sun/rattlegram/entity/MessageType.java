@@ -8,6 +8,7 @@ public enum MessageType {
     PING_INCOMING(Direction.INCOMING, false),
     ERROR_INCOMING(Direction.INCOMING, true),
     NORMAL_OUTGOING(Direction.OUTGOING, false),
+    PING_OUTGOING(Direction.OUTGOING, false),
     ;
 
     MessageType(Direction direction, boolean failed) {
