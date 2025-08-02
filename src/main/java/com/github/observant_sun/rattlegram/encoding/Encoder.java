@@ -1,6 +1,8 @@
 package com.github.observant_sun.rattlegram.encoding;
 
+import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.util.Utils;
+import lombok.Synchronized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +21,7 @@ public class Encoder implements AutoCloseable {
 
     private short[] outputBuffer;
 
-    private long encoderHandle;
+    private volatile long encoderHandle;
 
     private native long createNewEncoder(int sampleRate);
 
@@ -30,6 +32,7 @@ public class Encoder implements AutoCloseable {
     private native void destroyEncoder(long encoderHandle);
 
     public Encoder(int sampleRate, int channelCount) {
+        // TODO createNewEncoder returns the same long on every call, something wrong
         this.encoderHandle = createNewEncoder(sampleRate);
 
         int symbolLength = (1280 * sampleRate) / 8000;
@@ -38,11 +41,14 @@ public class Encoder implements AutoCloseable {
         this.outputBuffer = new short[extendedLength * channelCount];
     }
 
+    @Synchronized
     public void configure(byte[] payload, byte[] callSign, int carrierFrequency, int noiseSymbols, boolean fancyHeader) {
         this.configureEncoder(this.encoderHandle, payload, callSign, carrierFrequency, noiseSymbols, fancyHeader);
     }
 
+    @Synchronized
     public byte[] produce(int channelSelect) {
+        if (encoderHandle == 0) return null;
         log.debug("produce(channelSelect={}), encoderHandle={}", channelSelect, encoderHandle);
         List<byte[]> list = new ArrayList<>();
         for (int i = 0; i < REPEAT_COUNT; i++) {
@@ -67,6 +73,7 @@ public class Encoder implements AutoCloseable {
     }
 
     @Override
+    @Synchronized
     public void close() {
         if (this.encoderHandle != 0) {
             destroyEncoder(this.encoderHandle);

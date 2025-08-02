@@ -25,7 +25,7 @@ public class SpectrumAnalyzerWindowController implements Initializable {
         vBox.setBackground(new Background(new BackgroundFill(blackColor, null, null)));
         spectrumImageView.setPreserveRatio(false);
         model = Model.get();
-        model.addUpdateSpectrogramCallback(spectrumImages -> {
+        model.getUpdateSpectrogramPublisher().subscribe(spectrumImages -> {
             spectrumImageView.setImage(spectrumImages.spectrum());
             spectrogramImageView.setImage(spectrumImages.spectrogram());
         });

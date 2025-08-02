@@ -221,18 +221,28 @@ public class Decoder implements AutoCloseable {
     }
 
     public void pause() {
+        if (closed.get()) {
+            return;
+        }
         audioInputHandler.pause();
     }
 
     public void resume() {
+        if (closed.get()) {
+            return;
+        }
         audioInputHandler.resume();
     }
 
     @Override
     public void close() {
         resume(); // needed to unlock audioInputHandler
+        boolean alreadyClosed = closed.getAndSet(true);
+        if (alreadyClosed) {
+            log.warn("Attempted to close an already closed Decoder");
+            return;
+        }
         log.debug("Asking decoder to stop");
-        closed.set(true);
         try {
             boolean acquired = runSemaphore.tryAcquire(3, TimeUnit.SECONDS);
             if (!acquired) {

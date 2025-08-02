@@ -2,6 +2,8 @@ package com.github.observant_sun.rattlegram.controller;
 
 import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.i18n.I18n;
+import com.github.observant_sun.rattlegram.model.DecoderInteractor;
+import com.github.observant_sun.rattlegram.model.EncoderInteractor;
 import com.github.observant_sun.rattlegram.model.Model;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.application.Platform;
@@ -47,6 +49,8 @@ public class MainWindowController implements Initializable {
     private TextField messageBox;
 
     private Model model;
+    private DecoderInteractor decoderInteractor;
+    private EncoderInteractor encoderInteractor;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -111,11 +115,13 @@ public class MainWindowController implements Initializable {
             setRepeaterSettingsButtonStyle(newValue);
         });
 
-        model.addNewMessageCallback(this::processNewMessage);
-        model.addStatusUpdateCallback(this::processStatusUpdate);
-        model.addTransmissionBeginCallback(this::processTransmissionBegin);
-        model.addListeningBeginCallback(this::processListeningBegin);
-        model.initializeEncoders();
+        model.getNewIncomingMessagePublisher().subscribe(this::processNewMessage);
+        model.getStatusUpdatePublisher().subscribe(this::processStatusUpdate);
+        model.getTransmissionBeginPublisher().subscribe(this::processTransmissionBegin);
+        model.getListeningBeginPublisher().subscribe(this::processListeningBegin);
+        decoderInteractor = new DecoderInteractor(model);
+        encoderInteractor = new EncoderInteractor(model);
+        initEncoders();
     }
 
     private void setRepeaterSettingsButtonStyle(boolean repeaterEnabled) {
@@ -189,7 +195,7 @@ public class MainWindowController implements Initializable {
         } else {
             messagesTextArea.appendText(getMessageFormattedLine(LocalDateTime.now(), callsign, message, "<<"));
         }
-        model.transmitNewMessage(callsign, message);
+        encoderInteractor.transmitNewMessage(callsign, message);
     }
 
 
@@ -198,9 +204,9 @@ public class MainWindowController implements Initializable {
     }
 
     public void showSettingsWindow() {
-        model.pauseRecording();
+        decoderInteractor.pauseRecording();
         try {
-            Runnable updatePreferencesCallback = () -> model.reinitializeEncoders();
+            Runnable updatePreferencesCallback = this::reinitializeEncoders;
             SettingsWindowStarter.get().start(updatePreferencesCallback);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -219,5 +225,20 @@ public class MainWindowController implements Initializable {
     public void toggleRepeaterWindow() throws IOException {
         RepeaterWindowStarter.get().start();
         model.toggleRepeaterWindow();
+    }
+
+    private void initEncoders() {
+        encoderInteractor.init();
+        decoderInteractor.init();
+    }
+
+    private void closeResources() {
+        encoderInteractor.closeResources();
+        decoderInteractor.closeResources();
+    }
+
+    public void reinitializeEncoders() {
+        closeResources();
+        initEncoders();
     }
 }
