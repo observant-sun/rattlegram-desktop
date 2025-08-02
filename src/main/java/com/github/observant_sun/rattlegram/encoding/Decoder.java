@@ -3,6 +3,7 @@ package com.github.observant_sun.rattlegram.encoding;
 import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.i18n.I18n;
+import javafx.application.Platform;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritablePixelFormat;
@@ -246,8 +247,8 @@ public class Decoder implements AutoCloseable {
         try {
             boolean acquired = runSemaphore.tryAcquire(3, TimeUnit.SECONDS);
             if (!acquired) {
-                log.error("Failed to acquire runSemaphore for closing, calling System.exit() so application doesn't hang");
-                System.exit(1);
+                log.error("Failed to acquire runSemaphore for closing, calling Platform.exit() so application doesn't hang");
+                Platform.exit();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
