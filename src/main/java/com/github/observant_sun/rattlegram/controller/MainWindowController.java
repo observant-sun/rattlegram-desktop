@@ -29,8 +29,9 @@ import java.util.*;
 public class MainWindowController implements Initializable {
 
     private static final TextFormatter<Object> callsignBoxTextFormatter = new TextFormatter<>(change -> {
-        log.debug("Callsign change: {}", change.getText());
-        if (change.getText() == null || change.getText().isEmpty()) {
+        String text = change.getText();
+        log.trace("Callsign change: {}", text);
+        if (text == null || text.isEmpty()) {
             return change;
         }
         String controlNewText = change.getControlNewText();
@@ -39,13 +40,14 @@ public class MainWindowController implements Initializable {
             change.setText("");
             return change;
         }
-        change.setText(change.getText().toUpperCase().replaceAll("[^ A-Z0-9]", ""));
+        change.setText(text.toUpperCase().replaceAll("[^ A-Z0-9]", ""));
         return change;
     });
 
+    // TODO too computationally expensive for every key press, creates input lag
     private static final TextFormatter<Object> messageBoxTextFormatter = new TextFormatter<>(change -> {
         String changeText = change.getText();
-        log.debug("Message change: {}", changeText);
+        log.trace("Message change: {}", changeText);
         if (changeText == null || changeText.isEmpty()) {
             return change;
         }
