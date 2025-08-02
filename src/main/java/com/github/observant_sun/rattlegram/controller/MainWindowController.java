@@ -6,6 +6,7 @@ import com.github.observant_sun.rattlegram.model.DecoderInteractor;
 import com.github.observant_sun.rattlegram.model.EncoderInteractor;
 import com.github.observant_sun.rattlegram.model.Model;
 import com.github.observant_sun.rattlegram.prefs.*;
+import com.github.observant_sun.rattlegram.util.Utils;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -25,6 +27,41 @@ import java.util.*;
 
 @Slf4j
 public class MainWindowController implements Initializable {
+
+    private static final TextFormatter<Object> callsignBoxTextFormatter = new TextFormatter<>(change -> {
+        log.debug("Callsign change: {}", change.getText());
+        if (change.getText() == null || change.getText().isEmpty()) {
+            return change;
+        }
+        String controlNewText = change.getControlNewText();
+        int MAX_CALLSIGN_LENGTH = 10;
+        if (controlNewText.length() > MAX_CALLSIGN_LENGTH) {
+            change.setText("");
+            return change;
+        }
+        change.setText(change.getText().toUpperCase().replaceAll("[^ A-Z0-9]", ""));
+        return change;
+    });
+
+    private static final TextFormatter<Object> messageBoxTextFormatter = new TextFormatter<>(change -> {
+        String changeText = change.getText();
+        log.debug("Message change: {}", changeText);
+        if (changeText == null || changeText.isEmpty()) {
+            return change;
+        }
+        int controlNewTextBytesLength = change.getControlNewText().getBytes(StandardCharsets.UTF_8).length;
+        int MAX_MESSAGE_BYTE_LENGTH = 170;
+        if (controlNewTextBytesLength <= MAX_MESSAGE_BYTE_LENGTH) {
+            return change;
+        }
+
+        int diffBytes = controlNewTextBytesLength - MAX_MESSAGE_BYTE_LENGTH;
+        int oldByteLength = changeText.getBytes(StandardCharsets.UTF_8).length;
+        int newByteLength = oldByteLength - diffBytes;
+        changeText = Utils.truncateStringToUtf8ByteLength(changeText, newByteLength);
+        change.setText(changeText);
+        return change;
+    });
 
     @FXML
     private ButtonBar topButtonBar;
@@ -65,39 +102,8 @@ public class MainWindowController implements Initializable {
             }
         });
 
-        // TODO move to utils
-        TextFormatter<Object> callsignBoxTextFormatter = new TextFormatter<>(change -> {
-            log.debug("Callsign change: {}", change.getText());
-            if (change.getText() == null || change.getText().isEmpty()) {
-                return change;
-            }
-            String controlNewText = change.getControlNewText();
-            int MAX_CALLSIGN_LENGTH = 10;
-            if (controlNewText.length() > MAX_CALLSIGN_LENGTH) {
-                change.setText("");
-                return change;
-            }
-            change.setText(change.getText().toUpperCase().replaceAll("[^ A-Z0-9]", ""));
-            return change;
-        });
         this.callsignBox.setTextFormatter(callsignBoxTextFormatter);
-        // TODO move to utils
-        // TODO need to truncate to byte array length, not string length
-        this.messageBox.setTextFormatter(new TextFormatter<>(change -> {
-            String changeText = change.getText();
-            log.debug("Message change: {}", changeText);
-            if (changeText == null || changeText.isEmpty()) {
-                return change;
-            }
-            String controlNewText = change.getControlNewText();
-            int MAX_MESSAGE_LENGTH = 170;
-            if (controlNewText.length() > MAX_MESSAGE_LENGTH) {
-                int diff = controlNewText.length() - MAX_MESSAGE_LENGTH;
-                changeText = changeText.substring(0, changeText.length() - diff);
-                change.setText(changeText);
-            }
-            return change;
-        }));
+        this.messageBox.setTextFormatter(messageBoxTextFormatter);
 
         try {
             SpectrumAnalyzerWindowStarter.get().start();
