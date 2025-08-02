@@ -26,14 +26,8 @@ public class AudioInputHandler implements AutoCloseable {
         log.debug("Starting audio input handler");
         AudioFormat format = getAudioFormat();
         log.debug("Format: {}", format);
-        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-        log.debug("TargetDataLine: {}", info);
 
-        if (!AudioSystem.isLineSupported(info)) {
-            throw new RuntimeException("Input audio line not supported");
-        }
-
-        line = (TargetDataLine) AudioSystem.getLine(info);
+        line = AudioSystem.getTargetDataLine(format);
         line.open(format);
         log.debug("Opened audio input line");
         line.start();
@@ -72,6 +66,7 @@ public class AudioInputHandler implements AutoCloseable {
 
     @Override
     public void close() {
+        log.debug("Closing audio input line");
         try {
             line.close();
         } catch (Exception e) {
