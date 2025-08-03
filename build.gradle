@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'com.github.observant_sun'
-version = '0.4.1'
+version = '0.4.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -53,13 +53,29 @@ javafx {
 }
 
 var javaHome = System.getProperty("java.home")
+var os = org.gradle.internal.os.OperatingSystem.current()
 
 model {
 
+    platforms {
+        x64 {
+            architecture "x86_64"
+        }
+    }
+
     components {
-        var includePlatformSubfolder = "linux"
+        var includePlatformSubfolder
+        if (os.isWindows()) {
+            includePlatformSubfolder = 'win32'
+        } else {
+            includePlatformSubfolder = "linux"
+        }
         rattlegram(NativeLibrarySpec) {
+            targetPlatform 'x64'
             binaries.all {
+                if (os.isWindows()) {
+                    linker.args '-s'
+                }
                 cppCompiler.args '-std=c++17'
                 cppCompiler.args '-O3'
                 cppCompiler.args '-ffast-math'
@@ -98,9 +114,11 @@ jlink {
     imageZip = project.file("${buildDir}/distributions/rattlegram-desktop-${version}-${javafx.platform.classifier}.zip")
     launcher {
         name = 'rattlegram-desktop'
-        jvmArgs = [
-                '-Djava.library.path={{BIN_DIR}}'
-        ]
+        if (!os.isWindows()) {
+            jvmArgs = [
+                    '-Djava.library.path={{BIN_DIR}}'
+            ]
+        }
     }
 }
 
