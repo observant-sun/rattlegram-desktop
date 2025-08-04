@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 
@@ -31,11 +32,14 @@ public class RepeaterWindowStarter {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/repeater.fxml"), I18n.get().getResourceBundle());
         Parent parent = loader.load();
         stage = new Stage();
-        stage.setWidth(450);
-        stage.setHeight(300);
+        stage.initStyle(StageStyle.UTILITY);
+        int width = 600;
+        int height = 400;
+        stage.setWidth(width);
+        stage.setHeight(height);
         String title = I18n.get().getMessage(RepeaterWindowStarter.class, "windowTitle");
         stage.setTitle(title);
-        Scene spectrogramScene = new Scene(parent, 450, 300);
+        Scene spectrogramScene = new Scene(parent, width, height);
         stage.setScene(spectrogramScene);
         stage.setOnCloseRequest(event -> Model.get().showRepeaterWindowProperty().set(false));
         if (Model.get().showRepeaterWindowProperty().get()) {

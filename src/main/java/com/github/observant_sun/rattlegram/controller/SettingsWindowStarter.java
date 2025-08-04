@@ -31,6 +31,8 @@ public class SettingsWindowStarter {
         stage.setTitle(title);
         int width = 800;
         int height = 400;
+        stage.setWidth(width);
+        stage.setHeight(height);
         stage.setScene(new Scene(parent, width, height));
         stage.setOnHidden(event -> {
             controller.saveSettings();

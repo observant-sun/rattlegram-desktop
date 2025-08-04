@@ -8,7 +8,8 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.github.observant_sun.rattlegram.controller.SettingsWindowController">
+            fx:controller="com.github.observant_sun.rattlegram.controller.SettingsWindowController"
+            prefWidth="800" prefHeight="400">
     <TilePane fx:id="tilePane" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.leftAnchor="10"
               AnchorPane.bottomAnchor="10">
         <HBox spacing="10">
