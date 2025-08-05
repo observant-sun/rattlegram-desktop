@@ -28,7 +28,7 @@ Currently only works on Linux. Capable of sending and receiving.
 ### Making a distributable
 A file `build/distributions/rattlegram-desktop-{version}-{platform}.zip` should be created after you run the following command:
 ```bash
-./gradlew assemble
+./gradlew build
 ```
 
 ## TODO
