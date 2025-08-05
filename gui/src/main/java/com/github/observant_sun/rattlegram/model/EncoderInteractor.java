@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class EncoderInteractor {
 
-    private Model model;
+    private final Model model;
 
     @Getter
     private final AtomicReference<EncoderExecutor> encoderExecutorRef = new AtomicReference<>();

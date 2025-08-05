@@ -11,7 +11,7 @@ Copyright 2022 Ahmet Inan <inan@aicodix.de> and other authors
 #include "decoder.hh"
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Encoder_createNewEncoder(
+Java_com_github_observant_1sun_rattlegram_encoding_EncoderImpl_createNewEncoder(
 	JNIEnv *,
 	jobject,
 	jint sampleRate) {
@@ -39,7 +39,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Encoder_createNewEncoder(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Encoder_destroyEncoder(
+Java_com_github_observant_1sun_rattlegram_encoding_EncoderImpl_destroyEncoder(
 	JNIEnv *,
 	jobject,
 	jlong encoderHandle) {
@@ -48,7 +48,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Encoder_destroyEncoder(
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Encoder_produceEncoder(
+Java_com_github_observant_1sun_rattlegram_encoding_EncoderImpl_produceEncoder(
 	JNIEnv *env,
 	jobject,
 	jlong encoderHandle,
@@ -67,7 +67,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Encoder_produceEncoder(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Encoder_configureEncoder(
+Java_com_github_observant_1sun_rattlegram_encoding_EncoderImpl_configureEncoder(
 	JNIEnv *env,
 	jobject,
 	jlong encoderHandle,
@@ -102,7 +102,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Encoder_configureEncoder(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_destroyDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_destroyDecoder(
 	JNIEnv *,
 	jobject,
 	jlong decoderHandle) {
@@ -113,7 +113,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_destroyDecoder(
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_createNewDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_createNewDecoder(
 	JNIEnv *,
 	jobject,
 	jint sampleRate) {
@@ -141,7 +141,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_createNewDecoder(
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_fetchDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_fetchDecoder(
 	JNIEnv *env,
 	jobject,
 	jlong decoderHandle,
@@ -158,7 +158,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_fetchDecoder(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_stagedDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_stagedDecoder(
 	JNIEnv *env,
 	jobject,
 	jlong decoderHandle,
@@ -197,7 +197,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_stagedDecoder(
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_feedDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_feedDecoder(
 	JNIEnv *env,
 	jobject,
 	jlong decoderHandle,
@@ -227,7 +227,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_feedDecoder(
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_processDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_processDecoder(
 	JNIEnv *,
 	jobject,
 	jlong decoderHandle) {
@@ -240,7 +240,7 @@ Java_com_github_observant_1sun_rattlegram_encoding_Decoder_processDecoder(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_github_observant_1sun_rattlegram_encoding_Decoder_spectrumDecoder(
+Java_com_github_observant_1sun_rattlegram_encoding_DecoderImpl_spectrumDecoder(
 	JNIEnv *env,
 	jobject,
 	jlong decoderHandle,
