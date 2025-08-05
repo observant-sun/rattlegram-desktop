@@ -44,8 +44,8 @@ public class DecoderInteractor {
         Consumer<Message> newMessageCallback = this::processNewIncomingMessage;
         Consumer<StatusUpdate> statusUpdateCallback = model::processStatusUpdate;
         Runnable spectrumUpdateCallback = this::updateSpectrogram;
-        AudioInputHandler audioInputHandler = new AudioInputHandler(inputSampleRate, inputChannelCount);
-        Decoder decoder = new Decoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, spectrumUpdateCallback, audioInputHandler);
+        AudioInputHandler audioInputHandler = AudioInputHandler.newAudioInputHandler(inputSampleRate, inputChannelCount);
+        Decoder decoder = Decoder.newDecoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, spectrumUpdateCallback, audioInputHandler);
         model.setDecoder(decoder);
         decoder.setUpdateSpectrum(model.showSpectrumAnalyzerProperty().get());
         model.showSpectrumAnalyzerProperty().addListener(showSpectrumAnalyzerPropertyChangeListener);
@@ -63,7 +63,7 @@ public class DecoderInteractor {
     }
 
     private void updateSpectrogram() {
-        Decoder.SpectrumDecoderResult spectrumDecoderResult = getDecoder().spectrumDecoder();
+        SpectrumDecoderResult spectrumDecoderResult = getDecoder().spectrumDecoder();
         PixelBuffer<IntBuffer> spectrumPixels = spectrumDecoderResult.spectrumPixels();
         Image spectrumImage = new WritableImage(spectrumPixels);
         PixelBuffer<IntBuffer> spectrogramPixels = spectrumDecoderResult.spectrogramPixels();

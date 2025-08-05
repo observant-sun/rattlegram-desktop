@@ -30,8 +30,8 @@ public class EncoderInteractor {
         AppPreferences prefs = AppPreferences.get();
         final int outputSampleRate = prefs.get(Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
         final int outputChannelCount = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
-        Encoder encoder = new Encoder(outputSampleRate, outputChannelCount);
-        AudioOutputHandler audioOutputHandler = new AudioOutputHandler(outputSampleRate, outputChannelCount);
+        Encoder encoder = Encoder.newEncoder(outputSampleRate, outputChannelCount);
+        AudioOutputHandler audioOutputHandler = AudioOutputHandler.newAudioOutputHandler(outputSampleRate, outputChannelCount);
         setEncoderExecutor(new EncoderExecutor(encoder, audioOutputHandler));
     }
 
