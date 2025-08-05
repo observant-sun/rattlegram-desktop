@@ -1,2 +1,4 @@
 rootProject.name = 'rattlegram-desktop'
 
+include 'gui'
+include 'lib'
