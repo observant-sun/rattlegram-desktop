@@ -6,6 +6,7 @@ Copyright 2022 Ahmet Inan <inan@aicodix.de>
 
 #pragma once
 
+#include <cstring>
 #include <cmath>
 #include <iostream>
 

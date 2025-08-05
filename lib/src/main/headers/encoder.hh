@@ -6,7 +6,7 @@ Copyright 2022 Ahmet Inan <inan@aicodix.de>
 
 #pragma once
 
-#include <bits/stdc++.h>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include "bose_chaudhuri_hocquenghem_encoder.hh"
