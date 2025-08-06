@@ -72,12 +72,8 @@ class DecoderImpl implements Decoder {
     }
 
     @Override
-    public void start() {
-        try {
-            audioInputHandler.start();
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
+    public void start() throws LineUnavailableException {
+        audioInputHandler.start();
         Thread decoderThread = new Thread(this::run);
         decoderThread.setDaemon(true);
         decoderThread.start();

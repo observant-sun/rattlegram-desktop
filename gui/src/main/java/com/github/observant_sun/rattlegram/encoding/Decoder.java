@@ -3,6 +3,7 @@ package com.github.observant_sun.rattlegram.encoding;
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.entity.*;
 
+import javax.sound.sampled.LineUnavailableException;
 import java.util.function.Consumer;
 
 public interface Decoder extends AutoCloseable {
@@ -10,7 +11,7 @@ public interface Decoder extends AutoCloseable {
     void pause();
     void resume();
     SpectrumDecoderResult spectrumDecoder();
-    void start();
+    void start() throws LineUnavailableException;
     void setUpdateSpectrum(boolean updateSpectrum);
     @Override
     void close();

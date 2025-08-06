@@ -2,10 +2,7 @@ package com.github.observant_sun.rattlegram.model;
 
 import com.github.observant_sun.rattlegram.audio.AudioOutputHandler;
 import com.github.observant_sun.rattlegram.encoding.Encoder;
-import com.github.observant_sun.rattlegram.entity.Message;
-import com.github.observant_sun.rattlegram.entity.MessageType;
-import com.github.observant_sun.rattlegram.entity.OutgoingMessage;
-import com.github.observant_sun.rattlegram.entity.TransmissionSettings;
+import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.prefs.*;
 import lombok.Getter;
 
@@ -13,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class EncoderInteractor {
 
@@ -33,7 +31,11 @@ public class EncoderInteractor {
         Encoder encoder = Encoder.newEncoder(outputSampleRate, outputChannelCount);
         boolean artificiallyBlockingPlay = prefs.get(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, Boolean.class);
         AudioOutputHandler audioOutputHandler = AudioOutputHandler.newAudioOutputHandler(outputSampleRate, outputChannelCount, artificiallyBlockingPlay);
-        setEncoderExecutor(new EncoderExecutor(encoder, audioOutputHandler));
+        Consumer<Exception> transmissionFailureCallback = (exception) -> {
+            model.getStatusUpdatePublisher().submit(
+                    new StatusUpdate(StatusType.ERROR, "Transmission failed due to %s: %s".formatted(exception.getClass().getSimpleName(), exception.getMessage())));
+        };
+        setEncoderExecutor(new EncoderExecutor(encoder, audioOutputHandler, transmissionFailureCallback));
     }
 
     public void closeResources() {

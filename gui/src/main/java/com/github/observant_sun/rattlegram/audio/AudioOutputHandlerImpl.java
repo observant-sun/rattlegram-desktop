@@ -19,20 +19,11 @@ class AudioOutputHandlerImpl implements AudioOutputHandler {
     private final boolean useOutputDrainBlockWorkaround;
 
     @Override
-    public synchronized void play(byte[] buffer) {
-        Clip clip;
-        try {
-            clip = AudioSystem.getClip();
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
+    public synchronized void play(byte[] buffer) throws LineUnavailableException {
+        Clip clip = AudioSystem.getClip();
         AudioFormat format;
-        try {
-            format = getAudioFormat();
-            clip.open(format, buffer, 0, buffer.length);
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
+        format = getAudioFormat();
+        clip.open(format, buffer, 0, buffer.length);
         if (useOutputDrainBlockWorkaround) {
             startAndDrainBlockingly(clip, buffer.length);
         } else {
