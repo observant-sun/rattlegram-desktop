@@ -7,12 +7,17 @@ import javafx.application.Platform;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritablePixelFormat;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sound.sampled.LineUnavailableException;
 import java.io.IOException;
 import java.nio.IntBuffer;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -143,48 +148,69 @@ class DecoderImpl implements Decoder {
         runSemaphore.release();
     }
 
+    @Getter
+    @RequiredArgsConstructor
+    private enum DecoderStatus {
+        OKAY(0),
+        FAIL(1),
+        SYNC(2),
+        DONE(3),
+        HEAP(4),
+        NOPE(5),
+        PING(6),
+        ;
+
+        private final int statusCode;
+
+        private static final Map<Integer, DecoderStatus> codeToStatusMap = new HashMap<>(7);
+        static {
+            for (DecoderStatus status : values()) {
+                codeToStatusMap.put(status.statusCode, status);
+            }
+        }
+
+        public static Optional<DecoderStatus> getByCode(int statusCode) {
+            return Optional.ofNullable(codeToStatusMap.get(statusCode));
+        }
+    }
+
     private void decodeNextBytes() {
         if (!feedDecoder(decoderHandle, transformedAudioInputBuffer, recordCount, recordChannel))
             return;
-        int status = processDecoder(decoderHandle);
+        int statusCode = processDecoder(decoderHandle);
+        DecoderStatus status = DecoderStatus.getByCode(statusCode)
+                .orElseThrow(() -> new RuntimeException("Unknown decoder status: " + statusCode));
         if (updateSpectrum.get()) {
             spectrumUpdateCallback.run();
         }
-        final int STATUS_OKAY = 0;
-        final int STATUS_FAIL = 1;
-        final int STATUS_SYNC = 2;
-        final int STATUS_DONE = 3;
-        final int STATUS_HEAP = 4;
-        final int STATUS_NOPE = 5;
-        final int STATUS_PING = 6;
         switch (status) {
-            case STATUS_OKAY:
+            case OKAY:
                 break;
-            case STATUS_FAIL:
+            case FAIL:
                 String preambleFailedMsg = I18n.get().getMessage(Decoder.class, "preambleFailed");
                 statusUpdateCallback.accept(new StatusUpdate(StatusType.ERROR, preambleFailedMsg));
                 break;
-            case STATUS_NOPE:
+            case NOPE:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
                 String modeUnsupportedMsg = I18n.get().getMessage(Decoder.class, "modeUnsupported");
                 newMessageCallback.accept(new Message(getCallsign(), null, modeUnsupportedMsg.formatted(stagedMode[0]), LocalDateTime.now(), MessageType.ERROR_INCOMING));
                 break;
-            case STATUS_PING:
+            case PING:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
                 String gotPingMsg = I18n.get().getMessage(Decoder.class, "gotPing");
                 newMessageCallback.accept(new Message(getCallsign(), null, gotPingMsg, LocalDateTime.now(), MessageType.PING_INCOMING));
                 break;
-            case STATUS_HEAP:
+            case HEAP:
                 String notEnoughMemoryMsg = I18n.get().getMessage(Decoder.class, "notEnoughMemory");
                 statusUpdateCallback.accept(new StatusUpdate(StatusType.ERROR, notEnoughMemoryMsg));
                 break;
-            case STATUS_SYNC:
+            case SYNC:
                 stagedDecoder(decoderHandle, stagedCFO, stagedMode, stagedCall);
                 fromStatus();
                 break;
-            case STATUS_DONE:
+            case DONE:
                 int result = fetchDecoder(decoderHandle, payload);
                 if (result < 0) {
                     String decodingFailedMsg = I18n.get().getMessage(Decoder.class, "decodingFailed");
