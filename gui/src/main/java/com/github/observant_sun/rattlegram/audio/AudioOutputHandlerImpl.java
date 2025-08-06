@@ -16,7 +16,7 @@ class AudioOutputHandlerImpl implements AudioOutputHandler {
 
     private final int sampleRate;
     private final int channelCount;
-    private final boolean artificiallyBlockingPlay;
+    private final boolean useOutputDrainBlockWorkaround;
 
     @Override
     public synchronized void play(byte[] buffer) {
@@ -33,7 +33,7 @@ class AudioOutputHandlerImpl implements AudioOutputHandler {
         } catch (LineUnavailableException e) {
             throw new RuntimeException(e);
         }
-        if (artificiallyBlockingPlay) {
+        if (useOutputDrainBlockWorkaround) {
             startAndDrainBlockingly(clip, buffer.length);
         } else {
             startAndDrain(clip);
@@ -48,15 +48,14 @@ class AudioOutputHandlerImpl implements AudioOutputHandler {
     private void startAndDrainBlockingly(Clip clip, int bufferSize) {
         // clip.getMicrosecondLength() returns incorrect duration
         long clipDurationMs = bufferSize * 1000L / sampleRate / 2 / channelCount;
-        log.debug("calculated clip length: {}", clipDurationMs);
-        log.debug("clip length = {}", clip.getMicrosecondLength() / 1000);
         Stopwatch stopwatch = Stopwatch.createStarted();
         clip.start();
         clip.drain();
         long elapsedMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        if (clipDurationMs > elapsedMs) {
+        long sleepDuration = clipDurationMs - elapsedMs;
+        if (sleepDuration > 0) {
             try {
-                Thread.sleep(clipDurationMs - elapsedMs);
+                Thread.sleep(sleepDuration);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

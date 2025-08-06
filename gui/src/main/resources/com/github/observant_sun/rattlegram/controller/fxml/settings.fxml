@@ -44,5 +44,9 @@
             <Label fx:id="stopListeningWhenTransmittingCheckBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.stopListeningWhenTransmittingCheckBoxLabel.text"/>
             <CheckBox fx:id="stopListeningWhenTransmittingCheckBox"/>
         </HBox>
+        <HBox spacing="10">
+            <Label fx:id="blockAudioOutputDrainWorkaroundCheckBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.blockAudioOutputDrainWorkaroundCheckBoxLabel.text"/>
+            <CheckBox fx:id="blockAudioOutputDrainWorkaroundCheckBox"/>
+        </HBox>
     </TilePane>
 </AnchorPane>

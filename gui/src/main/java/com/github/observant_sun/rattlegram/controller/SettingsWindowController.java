@@ -30,6 +30,8 @@ public class SettingsWindowController implements Initializable {
     @FXML private ChoiceBox<OutputChannel> outputChannelChoiceBox;
     @FXML private Label stopListeningWhenTransmittingCheckBoxLabel;
     @FXML private CheckBox stopListeningWhenTransmittingCheckBox;
+    @FXML private Label blockAudioOutputDrainWorkaroundCheckBoxLabel;
+    @FXML private CheckBox blockAudioOutputDrainWorkaroundCheckBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -66,6 +68,8 @@ public class SettingsWindowController implements Initializable {
         outputChannelChoiceBox.setValue(outputChannel);
         Boolean stopListeningWhenTransmitting = prefs.get(Pref.STOP_LISTENING_WHEN_TRANSMITTING, Boolean.class);
         stopListeningWhenTransmittingCheckBox.setSelected(stopListeningWhenTransmitting);
+        Boolean blockAudioOutputDrainWorkaround = prefs.get(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, Boolean.class);
+        blockAudioOutputDrainWorkaroundCheckBox.setSelected(blockAudioOutputDrainWorkaround);
     }
 
     public void saveSettings() {
@@ -87,6 +91,8 @@ public class SettingsWindowController implements Initializable {
         prefs.set(Pref.OUTPUT_CHANNEL, outputChannel);
         Boolean stopListeningWhenTransmitting = stopListeningWhenTransmittingCheckBox.isSelected();
         prefs.set(Pref.STOP_LISTENING_WHEN_TRANSMITTING, stopListeningWhenTransmitting);
+        Boolean blockAudioOutputDrainWorkaround = blockAudioOutputDrainWorkaroundCheckBox.isSelected();
+        prefs.set(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, blockAudioOutputDrainWorkaround);
     }
 
 }
