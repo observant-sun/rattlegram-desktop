@@ -20,6 +20,7 @@ public enum Pref {
     REPEATER_MODE_ENABLED(Boolean.class),
     REPEATER_DELAY(Integer.class),
     REPEATER_DEBOUNCE_TIME(Integer.class),
+    BLOCK_OUTPUT_DRAIN_WORKAROUND(Boolean.class),
     ;
 
     private final Class<?> prefClass;

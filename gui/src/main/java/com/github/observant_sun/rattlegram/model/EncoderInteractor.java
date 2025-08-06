@@ -31,7 +31,8 @@ public class EncoderInteractor {
         final int outputSampleRate = prefs.get(Pref.OUTPUT_SAMPLE_RATE, SampleRate.class).getRateValue();
         final int outputChannelCount = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
         Encoder encoder = Encoder.newEncoder(outputSampleRate, outputChannelCount);
-        AudioOutputHandler audioOutputHandler = AudioOutputHandler.newAudioOutputHandler(outputSampleRate, outputChannelCount);
+        boolean artificiallyBlockingPlay = prefs.get(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, Boolean.class);
+        AudioOutputHandler audioOutputHandler = AudioOutputHandler.newAudioOutputHandler(outputSampleRate, outputChannelCount, artificiallyBlockingPlay);
         setEncoderExecutor(new EncoderExecutor(encoder, audioOutputHandler));
     }
 
