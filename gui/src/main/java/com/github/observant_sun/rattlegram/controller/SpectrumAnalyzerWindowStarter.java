@@ -2,6 +2,7 @@ package com.github.observant_sun.rattlegram.controller;
 
 import com.github.observant_sun.rattlegram.i18n.I18n;
 import com.github.observant_sun.rattlegram.model.Model;
+import com.github.observant_sun.rattlegram.util.WindowPosition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,6 +12,11 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class SpectrumAnalyzerWindowStarter {
+
+    private static final int DEFAULT_WIDTH = 800;
+    private static final int DEFAULT_HEIGHT = 400;
+
+    private final WindowPosition windowPosition = new WindowPosition(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
     private static final class InstanceHolder {
         private static final SpectrumAnalyzerWindowStarter instance = new SpectrumAnalyzerWindowStarter();
@@ -37,6 +43,7 @@ public class SpectrumAnalyzerWindowStarter {
         Scene spectrogramScene = new Scene(parent);
         stage.setScene(spectrogramScene);
         stage.setOnCloseRequest(event -> Model.get().showSpectrumAnalyzerProperty().set(false));
+        windowPosition.addListeners(stage);
         if (Model.get().showSpectrumAnalyzerProperty().get()) {
             Platform.runLater(this::show);
         }
@@ -58,6 +65,7 @@ public class SpectrumAnalyzerWindowStarter {
             }
         }
         stage.show();
+        windowPosition.setOnStage(stage);
     }
 
     public synchronized void hide() {
