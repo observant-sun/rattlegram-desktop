@@ -17,8 +17,7 @@ Currently only works on Linux. Capable of sending and receiving.
 ### Prerequisites
 * JDK version >= 17
 * GCC
-
-[//]: # (  * On Windows, use mingw-w64 &#40;[installation guide]&#40;https://code.visualstudio.com/docs/cpp/config-mingw&#41;&#41; )
+  * On Windows, use mingw-w64 ([installation guide](https://code.visualstudio.com/docs/cpp/config-mingw))
 
 ### Running from source code
 ```bash

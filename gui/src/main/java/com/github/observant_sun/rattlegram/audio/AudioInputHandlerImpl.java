@@ -16,10 +16,12 @@ class AudioInputHandlerImpl implements AudioInputHandler {
 
     private final int sampleRate;
     private final int channelCount;
+    private final Mixer.Info inputMixerInfo;
 
-    public AudioInputHandlerImpl(int sampleRate, int channelCount) {
+    public AudioInputHandlerImpl(int sampleRate, int channelCount, Mixer.Info inputMixerInfo) {
         this.sampleRate = sampleRate;
         this.channelCount = channelCount;
+        this.inputMixerInfo = inputMixerInfo;
     }
 
     @Override
@@ -43,11 +45,15 @@ class AudioInputHandlerImpl implements AudioInputHandler {
     }
 
     TargetDataLine getTargetDataLine(AudioFormat format) throws LineUnavailableException {
-        return AudioSystem.getTargetDataLine(format);
+        log.debug("inputMixerInfo: {}", inputMixerInfo);
+        return AudioSystem.getTargetDataLine(format, inputMixerInfo);
     }
 
     @Override
     public void pause() {
+        if (line == null) {
+            return;
+        }
         log.debug("Pausing audio input stream");
         line.stop();
         reentrantLock.lock();
@@ -55,6 +61,9 @@ class AudioInputHandlerImpl implements AudioInputHandler {
 
     @Override
     public void resume() {
+        if (line == null) {
+            return;
+        }
         log.debug("Resuming audio input stream");
         line.start();
         reentrantLock.unlock();
@@ -62,6 +71,9 @@ class AudioInputHandlerImpl implements AudioInputHandler {
 
     @Override
     public int read(byte[] buffer) throws IOException {
+        if (line == null) {
+            return -1;
+        }
         // AudioInputStream.read(byte[]) does not block if line is stopped
         reentrantLock.lock();
         int read = audioInputStream.read(buffer);

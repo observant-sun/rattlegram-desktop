@@ -21,6 +21,7 @@ public enum Pref {
     REPEATER_DELAY(Integer.class),
     REPEATER_DEBOUNCE_TIME(Integer.class),
     BLOCK_OUTPUT_DRAIN_WORKAROUND(Boolean.class),
+    INPUT_AUDIO_MIXER_STRING_REPRESENTATION(String.class),
     ;
 
     private final Class<?> prefClass;

@@ -48,5 +48,9 @@
             <Label fx:id="blockAudioOutputDrainWorkaroundCheckBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.blockAudioOutputDrainWorkaroundCheckBoxLabel.text"/>
             <CheckBox fx:id="blockAudioOutputDrainWorkaroundCheckBox"/>
         </HBox>
+        <HBox spacing="10">
+            <Label fx:id="inputMixerInfoChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.inputMixerInfoChoiceBoxLabel.text"/>
+            <ChoiceBox fx:id="inputMixerInfoChoiceBox"/>
+        </HBox>
     </TilePane>
 </AnchorPane>

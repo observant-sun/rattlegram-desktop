@@ -13,7 +13,7 @@ import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.WritableImage;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 import java.nio.IntBuffer;
 import java.time.Duration;
 import java.util.function.Consumer;
@@ -45,16 +45,17 @@ public class DecoderInteractor {
         Consumer<Message> newMessageCallback = this::processNewIncomingMessage;
         Consumer<StatusUpdate> statusUpdateCallback = model::processStatusUpdate;
         Runnable spectrumUpdateCallback = this::updateSpectrogram;
-        AudioInputHandler audioInputHandler = AudioInputHandler.newAudioInputHandler(inputSampleRate, inputChannelCount);
+        Mixer.Info inputMixerInfo = model.inputMixerInfoProperty().get().mixerInfo();
+        AudioInputHandler audioInputHandler = AudioInputHandler.newAudioInputHandler(inputSampleRate, inputChannelCount, inputMixerInfo);
         Decoder decoder = Decoder.newDecoder(inputSampleRate, inputChannel, inputChannelCount, newMessageCallback, statusUpdateCallback, spectrumUpdateCallback, audioInputHandler);
         model.setDecoder(decoder);
         decoder.setUpdateSpectrum(model.showSpectrumAnalyzerProperty().get());
         model.showSpectrumAnalyzerProperty().addListener(showSpectrumAnalyzerPropertyChangeListener);
         try {
             decoder.start();
-        } catch (LineUnavailableException e) {
+        } catch (Exception e) {
             log.error("Error starting audio input system", e);
-            model.getStatusUpdatePublisher().submit(new StatusUpdate(StatusType.ERROR, "Error starting audio input system (unsupported format)"));
+            model.getStatusUpdatePublisher().submit(new StatusUpdate(StatusType.ERROR, "Error starting audio input system"));
             return;
         }
         model.getStatusUpdatePublisher().submit(new StatusUpdate(StatusType.OK, "Listening"));

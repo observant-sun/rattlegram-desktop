@@ -18,7 +18,7 @@ class AudioInputHandlerImplTest {
     boolean bigEndian = false;
     AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSizeInBits, channelCount, signed, bigEndian);
 
-    AudioInputHandlerImpl audioInputHandler = spy(new AudioInputHandlerImpl(sampleRate, channelCount));
+    AudioInputHandlerImpl audioInputHandler = spy(new AudioInputHandlerImpl(sampleRate, channelCount, null));
 
     TargetDataLine line = mock(TargetDataLine.class);
     AudioInputStream audioInputStream = mock(AudioInputStream.class);

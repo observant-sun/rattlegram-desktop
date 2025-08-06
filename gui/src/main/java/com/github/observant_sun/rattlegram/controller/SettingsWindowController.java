@@ -1,5 +1,8 @@
 package com.github.observant_sun.rattlegram.controller;
 
+import com.github.observant_sun.rattlegram.util.AudioUtils;
+import com.github.observant_sun.rattlegram.entity.AudioMixerInfoWrapper;
+import com.github.observant_sun.rattlegram.model.Model;
 import com.github.observant_sun.rattlegram.prefs.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,6 +15,8 @@ import java.util.*;
 
 @Slf4j
 public class SettingsWindowController implements Initializable {
+
+    private final Model model = Model.get();
 
     @FXML private TilePane tilePane;
     @FXML private Label inputSampleRateChoiceBoxLabel;
@@ -32,6 +37,8 @@ public class SettingsWindowController implements Initializable {
     @FXML private CheckBox stopListeningWhenTransmittingCheckBox;
     @FXML private Label blockAudioOutputDrainWorkaroundCheckBoxLabel;
     @FXML private CheckBox blockAudioOutputDrainWorkaroundCheckBox;
+    @FXML private Label inputMixerInfoChoiceBoxLabel;
+    @FXML private ChoiceBox<AudioMixerInfoWrapper> inputMixerInfoChoiceBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -46,6 +53,7 @@ public class SettingsWindowController implements Initializable {
         inputChannelChoiceBox.getItems().addAll(InputChannel.values());
         outputSampleRateChoiceBox.getItems().addAll(SampleRate.values());
         outputChannelChoiceBox.getItems().addAll(OutputChannel.values());
+        inputMixerInfoChoiceBox.getItems().addAll(AudioUtils.getMixerInfos());
     }
 
     public void loadSettings() {
@@ -70,6 +78,12 @@ public class SettingsWindowController implements Initializable {
         stopListeningWhenTransmittingCheckBox.setSelected(stopListeningWhenTransmitting);
         Boolean blockAudioOutputDrainWorkaround = prefs.get(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, Boolean.class);
         blockAudioOutputDrainWorkaroundCheckBox.setSelected(blockAudioOutputDrainWorkaround);
+
+        String inputMixerStringRepresentation = prefs.get(Pref.INPUT_AUDIO_MIXER_STRING_REPRESENTATION, String.class);
+        inputMixerInfoChoiceBox.getItems().stream()
+                .filter(item -> item.toString().equals(inputMixerStringRepresentation))
+                .findFirst()
+                .ifPresent(item -> inputMixerInfoChoiceBox.getSelectionModel().select(item));
     }
 
     public void saveSettings() {
@@ -93,6 +107,8 @@ public class SettingsWindowController implements Initializable {
         prefs.set(Pref.STOP_LISTENING_WHEN_TRANSMITTING, stopListeningWhenTransmitting);
         Boolean blockAudioOutputDrainWorkaround = blockAudioOutputDrainWorkaroundCheckBox.isSelected();
         prefs.set(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, blockAudioOutputDrainWorkaround);
+        AudioMixerInfoWrapper inputMixerInfoWrapper = inputMixerInfoChoiceBox.getValue();
+        model.inputMixerInfoProperty().set(inputMixerInfoWrapper);
     }
 
 }

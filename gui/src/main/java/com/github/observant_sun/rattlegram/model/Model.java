@@ -1,5 +1,6 @@
 package com.github.observant_sun.rattlegram.model;
 
+import com.github.observant_sun.rattlegram.util.AudioUtils;
 import com.github.observant_sun.rattlegram.encoding.Decoder;
 import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.prefs.*;
@@ -128,6 +129,24 @@ public class Model {
             }
         }
         return repeaterDebounceTime;
+    }
+
+    private volatile ObjectProperty<AudioMixerInfoWrapper> inputMixerInfo;
+    public ObjectProperty<AudioMixerInfoWrapper> inputMixerInfoProperty() {
+        if (inputMixerInfo == null) {
+            synchronized (this) {
+                if (inputMixerInfo == null) {
+                    String savedRepresentation = AppPreferences.get().get(Pref.INPUT_AUDIO_MIXER_STRING_REPRESENTATION, String.class);
+                    AudioMixerInfoWrapper obj = AudioUtils.getByStringRepresentation(savedRepresentation)
+                            .orElse(AudioUtils.getDefaultMixer());
+                    inputMixerInfo = new SimpleObjectProperty<>(this, "inputMixerInfo", obj);
+                    inputMixerInfo.addListener((observable, oldValue, newValue) -> {
+                        AppPreferences.get().set(Pref.INPUT_AUDIO_MIXER_STRING_REPRESENTATION, newValue.toString());
+                    });
+                }
+            }
+        }
+        return inputMixerInfo;
     }
 
     public Decoder getDecoder() {
