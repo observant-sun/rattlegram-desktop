@@ -3,7 +3,6 @@ package com.github.observant_sun.rattlegram.encoding;
 import com.github.observant_sun.rattlegram.audio.AudioInputHandler;
 import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.i18n.I18n;
-import javafx.application.Platform;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritablePixelFormat;
@@ -18,8 +17,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -60,11 +57,10 @@ class DecoderImpl implements Decoder {
     private final int[] spectrogramPixels = new int[spectrogramHeight * spectrogramWidth];
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
-    private final Semaphore runSemaphore = new Semaphore(1);
 
     public DecoderImpl(int sampleRate, int recordChannel, int channelCount,
-                   Consumer<Message> newMessageCallback, Consumer<StatusUpdate> statusUpdateCallback,
-                   Runnable spectrumUpdateCallback, AudioInputHandler audioInputHandler) {
+                       Consumer<Message> newMessageCallback, Consumer<StatusUpdate> statusUpdateCallback,
+                       Runnable spectrumUpdateCallback, AudioInputHandler audioInputHandler) {
         this.sampleRate = sampleRate;
         this.recordChannel = recordChannel;
         this.channelCount = channelCount;
@@ -130,7 +126,6 @@ class DecoderImpl implements Decoder {
     }
 
     private void run() {
-        runSemaphore.acquireUninterruptibly();
         while (!closed.get()) {
             int read;
             try {
@@ -145,7 +140,6 @@ class DecoderImpl implements Decoder {
             copyToTransformedBuffer();
             decodeNextBytes();
         }
-        runSemaphore.release();
     }
 
     @Getter
@@ -163,6 +157,7 @@ class DecoderImpl implements Decoder {
         private final int statusCode;
 
         private static final Map<Integer, DecoderStatus> codeToStatusMap = new HashMap<>(7);
+
         static {
             for (DecoderStatus status : values()) {
                 codeToStatusMap.put(status.statusCode, status);
@@ -259,22 +254,13 @@ class DecoderImpl implements Decoder {
 
     @Override
     public void close() {
-        resume(); // needed to unlock audioInputHandler
+        resume();
         boolean alreadyClosed = closed.getAndSet(true);
         if (alreadyClosed) {
             log.warn("Attempted to close an already closed Decoder");
             return;
         }
         log.debug("Asking decoder to stop");
-        try {
-            boolean acquired = runSemaphore.tryAcquire(3, TimeUnit.SECONDS);
-            if (!acquired) {
-                log.error("Failed to acquire runSemaphore for closing, calling Platform.exit() so application doesn't hang");
-                Platform.exit();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         try {
             audioInputHandler.close();
         } catch (Exception e) {
@@ -289,6 +275,5 @@ class DecoderImpl implements Decoder {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        runSemaphore.release();
     }
 }
