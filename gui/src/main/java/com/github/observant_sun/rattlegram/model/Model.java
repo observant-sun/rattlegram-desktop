@@ -149,6 +149,24 @@ public class Model {
         return inputMixerInfo;
     }
 
+    private volatile ObjectProperty<AudioMixerInfoWrapper> outputMixerInfo;
+    public ObjectProperty<AudioMixerInfoWrapper> outputMixerInfoProperty() {
+        if (outputMixerInfo == null) {
+            synchronized (this) {
+                if (outputMixerInfo == null) {
+                    String savedRepresentation = AppPreferences.get().get(Pref.OUTPUT_AUDIO_MIXER_STRING_REPRESENTATION, String.class);
+                    AudioMixerInfoWrapper obj = AudioUtils.getByStringRepresentation(savedRepresentation)
+                            .orElse(AudioUtils.getDefaultMixer());
+                    outputMixerInfo = new SimpleObjectProperty<>(this, "outputMixerInfo", obj);
+                    outputMixerInfo.addListener((observable, oldValue, newValue) -> {
+                        AppPreferences.get().set(Pref.OUTPUT_AUDIO_MIXER_STRING_REPRESENTATION, newValue.toString());
+                    });
+                }
+            }
+        }
+        return outputMixerInfo;
+    }
+
     public Decoder getDecoder() {
         return decoderReference.get();
     }

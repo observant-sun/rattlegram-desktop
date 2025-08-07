@@ -1,13 +1,12 @@
 package com.github.observant_sun.rattlegram.audio;
 
+import com.github.observant_sun.rattlegram.entity.AudioMixerInfoWrapper;
 import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -17,17 +16,23 @@ class AudioOutputHandlerImpl implements AudioOutputHandler {
     private final int sampleRate;
     private final int channelCount;
     private final boolean useOutputDrainBlockWorkaround;
+    private final Mixer.Info outputMixerInfo;
 
     @Override
     public synchronized void play(byte[] buffer) throws LineUnavailableException {
-        Clip clip = AudioSystem.getClip();
-        AudioFormat format;
-        format = getAudioFormat();
-        clip.open(format, buffer, 0, buffer.length);
-        if (useOutputDrainBlockWorkaround) {
-            startAndDrainBlockingly(clip, buffer.length);
-        } else {
-            startAndDrain(clip);
+        Clip clip = AudioSystem.getClip(outputMixerInfo);
+        try {
+            AudioFormat format;
+            format = getAudioFormat();
+            clip.open(format, buffer, 0, buffer.length);
+            if (useOutputDrainBlockWorkaround) {
+                startAndDrainBlockingly(clip, buffer.length);
+            } else {
+                startAndDrain(clip);
+            }
+        } finally {
+            // asynchronously, otherwise it would block for too long
+            ForkJoinPool.commonPool().execute(clip::close);
         }
     }
 
@@ -46,6 +51,7 @@ class AudioOutputHandlerImpl implements AudioOutputHandler {
         long sleepDuration = clipDurationMs - elapsedMs;
         if (sleepDuration > 0) {
             try {
+                log.debug("Sleeping for {} ms", sleepDuration);
                 Thread.sleep(sleepDuration);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

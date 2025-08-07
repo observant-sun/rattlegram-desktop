@@ -52,5 +52,9 @@
             <Label fx:id="inputMixerInfoChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.inputMixerInfoChoiceBoxLabel.text"/>
             <ChoiceBox fx:id="inputMixerInfoChoiceBox"/>
         </HBox>
+        <HBox spacing="10">
+            <Label fx:id="outputMixerInfoChoiceBoxLabel" text="%com.github.observant_sun.rattlegram.controller.SettingsWindowController.outputMixerInfoChoiceBoxLabel.text"/>
+            <ChoiceBox fx:id="outputMixerInfoChoiceBox"/>
+        </HBox>
     </TilePane>
 </AnchorPane>

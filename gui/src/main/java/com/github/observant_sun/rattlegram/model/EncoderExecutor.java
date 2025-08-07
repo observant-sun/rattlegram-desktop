@@ -39,9 +39,13 @@ public class EncoderExecutor implements AutoCloseable {
     public void transmit(byte[] payload, byte[] callsignBytes, TransmissionSettings transmissionSettings, Runnable beforeTransmit) {
         Runnable runnable = () -> {
             try {
+                log.debug("running transmit");
                 beforeTransmit.run();
+                log.debug("pre-transmit complete");
                 byte[] audioOutputBytes = produceAudioOutputBytes(payload, callsignBytes, transmissionSettings);
+                log.debug("bytes produced");
                 playAudioOutputBytes(audioOutputBytes);
+                log.debug("transmission complete");
             } catch (Exception e) {
                 log.error("Error transmitting audio output", e);
                 transmissionFailureCallback.accept(e);
@@ -69,19 +73,26 @@ public class EncoderExecutor implements AutoCloseable {
         Model model = Model.get();
         Boolean stopListeningWhenTransmitting = AppPreferences.get().get(Pref.STOP_LISTENING_WHEN_TRANSMITTING, Boolean.class);
         model.getTransmissionBeginPublisher().publish();
+        log.debug("published transmission begin");
 
         Decoder decoder = model.getDecoder();
         if (stopListeningWhenTransmitting) {
             decoder.pause();
+            log.debug("decoder paused");
         }
-
-        getAudioOutputHandler().play(arr);
-
-        if (stopListeningWhenTransmitting) {
-            decoder.resume();
+        try {
+            log.debug("playing audio output");
+            getAudioOutputHandler().play(arr);
+            log.debug("audio output played");
+        } finally {
+            if (stopListeningWhenTransmitting) {
+                decoder.resume();
+                log.debug("decoder resumed");
+            }
         }
 
         model.getListeningBeginPublisher().publish();
+        log.debug("published listening begin");
     }
 
     @Override

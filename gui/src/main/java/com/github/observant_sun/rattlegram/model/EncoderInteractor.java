@@ -6,6 +6,7 @@ import com.github.observant_sun.rattlegram.entity.*;
 import com.github.observant_sun.rattlegram.prefs.*;
 import lombok.Getter;
 
+import javax.sound.sampled.Mixer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -30,7 +31,8 @@ public class EncoderInteractor {
         final int outputChannelCount = prefs.get(Pref.OUTPUT_CHANNEL, OutputChannel.class).getChannelCount();
         Encoder encoder = Encoder.newEncoder(outputSampleRate, outputChannelCount);
         boolean artificiallyBlockingPlay = prefs.get(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, Boolean.class);
-        AudioOutputHandler audioOutputHandler = AudioOutputHandler.newAudioOutputHandler(outputSampleRate, outputChannelCount, artificiallyBlockingPlay);
+        Mixer.Info outputMixerInfo = model.outputMixerInfoProperty().get().mixerInfo();
+        AudioOutputHandler audioOutputHandler = AudioOutputHandler.newAudioOutputHandler(outputSampleRate, outputChannelCount, artificiallyBlockingPlay, outputMixerInfo);
         Consumer<Exception> transmissionFailureCallback = (exception) -> {
             model.getStatusUpdatePublisher().submit(
                     new StatusUpdate(StatusType.ERROR, "Transmission failed due to %s: %s".formatted(exception.getClass().getSimpleName(), exception.getMessage())));

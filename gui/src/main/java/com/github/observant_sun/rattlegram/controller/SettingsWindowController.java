@@ -39,6 +39,8 @@ public class SettingsWindowController implements Initializable {
     @FXML private CheckBox blockAudioOutputDrainWorkaroundCheckBox;
     @FXML private Label inputMixerInfoChoiceBoxLabel;
     @FXML private ChoiceBox<AudioMixerInfoWrapper> inputMixerInfoChoiceBox;
+    @FXML private Label outputMixerInfoChoiceBoxLabel;
+    @FXML private ChoiceBox<AudioMixerInfoWrapper> outputMixerInfoChoiceBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -54,6 +56,7 @@ public class SettingsWindowController implements Initializable {
         outputSampleRateChoiceBox.getItems().addAll(SampleRate.values());
         outputChannelChoiceBox.getItems().addAll(OutputChannel.values());
         inputMixerInfoChoiceBox.getItems().addAll(AudioUtils.getMixerInfos());
+        outputMixerInfoChoiceBox.getItems().addAll(AudioUtils.getMixerInfos());
     }
 
     public void loadSettings() {
@@ -84,6 +87,11 @@ public class SettingsWindowController implements Initializable {
                 .filter(item -> item.toString().equals(inputMixerStringRepresentation))
                 .findFirst()
                 .ifPresent(item -> inputMixerInfoChoiceBox.getSelectionModel().select(item));
+        String outputMixerStringRepresentation = prefs.get(Pref.OUTPUT_AUDIO_MIXER_STRING_REPRESENTATION, String.class);
+        outputMixerInfoChoiceBox.getItems().stream()
+                .filter(item -> item.toString().equals(outputMixerStringRepresentation))
+                .findFirst()
+                .ifPresent(item -> outputMixerInfoChoiceBox.getSelectionModel().select(item));
     }
 
     public void saveSettings() {
@@ -109,6 +117,8 @@ public class SettingsWindowController implements Initializable {
         prefs.set(Pref.BLOCK_OUTPUT_DRAIN_WORKAROUND, blockAudioOutputDrainWorkaround);
         AudioMixerInfoWrapper inputMixerInfoWrapper = inputMixerInfoChoiceBox.getValue();
         model.inputMixerInfoProperty().set(inputMixerInfoWrapper);
+        AudioMixerInfoWrapper outputMixerInfoWrapper = outputMixerInfoChoiceBox.getValue();
+        model.outputMixerInfoProperty().set(outputMixerInfoWrapper);
     }
 
 }
