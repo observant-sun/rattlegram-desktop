@@ -37,45 +37,33 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: distributable
-        path: gui/build/distributions/*.zip
-        overwrite: true
-
-#  build-windows:
-#
-#    runs-on: windows-latest
-#    permissions:
-#      contents: read
-#
-#    steps:
-#    - name: Set up MinGW
-#      uses: egor-tensin/setup-mingw@v2
-#      with:
-#        platform: x64
-#
-#    - uses: actions/checkout@v4
-#    - name: Set up JDK 17
-#      uses: actions/setup-java@v4
-#      with:
-#        java-version: '17'
-#        distribution: 'temurin'
-#
-#    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-#    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
-#    - name: Setup Gradle
-#      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
-#
-#    - name: Build with Gradle Wrapper
-#      run: ./gradlew build
-#
-#    - name: Archive production artifacts
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: distributable
-#        path: gui/build/distributions/*.zip
+  build-windows:
+  
+   runs-on: windows-latest
+   permissions:
+     contents: read
+  
+   steps:
+   - name: Set up MinGW
+     uses: egor-tensin/setup-mingw@v2
+     with:
+       platform: x64
+       version: 12.2.0 
+  
+   - uses: actions/checkout@v4
+   - name: Set up JDK 17
+     uses: actions/setup-java@v4
+     with:
+       java-version: '17'
+       distribution: 'temurin'
+  
+   # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
+   # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+   - name: Setup Gradle
+     uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+  
+   - name: Build with Gradle Wrapper
+     run: ./gradlew build
 
   build-macos:
 
