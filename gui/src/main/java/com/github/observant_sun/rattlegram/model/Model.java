@@ -66,6 +66,10 @@ public class Model {
                     boolean initialValue = AppPreferences.get().get(Pref.SHOW_SPECTRUM_ANALYZER, Boolean.class);
                     showSpectrumAnalyzer = new SimpleBooleanProperty(this, "showSpectrogram", initialValue);
                     showSpectrumAnalyzer.addListener((observable, oldValue, newValue) -> {
+                        if (newValue == null) {
+                            log.warn("showSpectrumAnalyzer newValue is null, setting to false");
+                            newValue = Boolean.FALSE;
+                        }
                         AppPreferences.get().set(Pref.SHOW_SPECTRUM_ANALYZER, newValue);
                     });
                 }
@@ -91,6 +95,10 @@ public class Model {
                     boolean initialValue = AppPreferences.get().get(Pref.REPEATER_MODE_ENABLED, Boolean.class);
                     repeaterModeEnabled = new SimpleBooleanProperty(this, "repeaterModeEnabled", initialValue);
                     repeaterModeEnabled.addListener((observable, oldValue, newValue) -> {
+                        if (newValue == null) {
+                            log.warn("repeaterModeEnabled newValue is null, setting to false");
+                            newValue = Boolean.FALSE;
+                        }
                         AppPreferences.get().set(Pref.REPEATER_MODE_ENABLED, newValue);
                     });
                 }
@@ -107,6 +115,10 @@ public class Model {
                     int initialValue = AppPreferences.get().get(Pref.REPEATER_DELAY, Integer.class);
                     repeaterDelay = new SimpleIntegerProperty(this, "repeaterDelay", initialValue);
                     repeaterDelay.addListener((observable, oldValue, newValue) -> {
+                        if (newValue == null) {
+                            log.warn("repeaterDelay newValue is null");
+                            return;
+                        }
                         AppPreferences.get().set(Pref.REPEATER_DELAY, newValue);
                     });
                 }
@@ -123,6 +135,10 @@ public class Model {
                     int initialValue = AppPreferences.get().get(Pref.REPEATER_DEBOUNCE_TIME, Integer.class);
                     repeaterDebounceTime = new SimpleIntegerProperty(this, "repeaterDebounceTime", initialValue);
                     repeaterDebounceTime.addListener((observable, oldValue, newValue) -> {
+                        if (newValue == null) {
+                            log.warn("repeaterDebounceTime newValue is null");
+                            return;
+                        }
                         AppPreferences.get().set(Pref.REPEATER_DEBOUNCE_TIME, newValue);
                     });
                 }
@@ -141,6 +157,10 @@ public class Model {
                             .orElse(AudioUtils.getDefaultMixer());
                     inputMixerInfo = new SimpleObjectProperty<>(this, "inputMixerInfo", obj);
                     inputMixerInfo.addListener((observable, oldValue, newValue) -> {
+                        if (newValue == null) {
+                            log.warn("inputMixerInfo newValue is null");
+                            return;
+                        }
                         AppPreferences.get().set(Pref.INPUT_AUDIO_MIXER_STRING_REPRESENTATION, newValue.toString());
                     });
                 }
@@ -159,6 +179,10 @@ public class Model {
                             .orElse(AudioUtils.getDefaultMixer());
                     outputMixerInfo = new SimpleObjectProperty<>(this, "outputMixerInfo", obj);
                     outputMixerInfo.addListener((observable, oldValue, newValue) -> {
+                        if (newValue == null) {
+                            log.warn("outputMixerInfo newValue is null");
+                            return;
+                        }
                         AppPreferences.get().set(Pref.OUTPUT_AUDIO_MIXER_STRING_REPRESENTATION, newValue.toString());
                     });
                 }
