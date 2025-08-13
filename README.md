@@ -4,7 +4,7 @@ Desktop port of https://github.com/aicodix/rattlegram.
 
 Transceive UTF-8 text messages with up to 170 bytes over audio in about a second, on desktop, with a GUI.
 
-Tested on Linux, distributed for Linux and MacOS. 
+Tested on Linux and Windows, distributed for Linux, Windows and MacOS. 
 
 If you encounter a problem, please open a new issue and describe it in detail.
 
@@ -26,8 +26,8 @@ Two versions of distributables are released: JARs (that require a JRE version 17
 
 ### Prerequisites
 * JDK version >= 17
-* GCC
-  * On Windows, use mingw-w64 ([installation guide](https://code.visualstudio.com/docs/cpp/config-mingw))
+* GCC or Clang
+  * On Windows, use GCC with mingw-w64 ([installation guide](https://code.visualstudio.com/docs/cpp/config-mingw))
 
 ### Running from source code
 ```bash
@@ -35,12 +35,10 @@ Two versions of distributables are released: JARs (that require a JRE version 17
 ```
 
 ### Making a distributable
-A file `build/distributions/rattlegram-desktop-{version}-{platform}.zip` should be created after you run the following command:
+A file `gui/build/distributions/rattlegram-desktop-{version}-{platform}.zip` should be created after you run the following command:
 ```bash
 ./gradlew build
 ```
 
 ## TODO
-* Add some tests
-* Windows and Mac support
-* Add localizations
+* Show expected encoder mode based on message length
