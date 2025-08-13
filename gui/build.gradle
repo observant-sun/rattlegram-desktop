@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.github.observant_sun'
-version = '0.4.4'
+version = '0.4.5'
 
 repositories {
     mavenCentral()
@@ -67,6 +67,8 @@ dependencies {
 task copyDebugLibs(type: Copy) {
     from configurations.jniDebugRuntime
     into 'build/nativelibs'
+
+    setDescription("Copies built native library into build directory")
 }
 
 jar {
@@ -77,13 +79,15 @@ application {
     mainClass = 'com.github.observant_sun.rattlegram.RattlegramLauncher'
     applicationName = 'rattlegram-desktop'
     mainModule = 'rattlegram'
-    applicationDefaultJvmArgs += [
-            "-Djava.library.path=${buildDir}/nativelibs"
-    ]
 }
 
 run {
     dependsOn(copyDebugLibs)
+    doFirst {
+        applicationDefaultJvmArgs += [
+                "-Djava.library.path=${buildDir}/nativelibs"
+        ]
+    }
 }
 
 distributions {
@@ -97,15 +101,19 @@ distributions {
     }
 }
 
+var os = org.gradle.internal.os.OperatingSystem.current()
+
 startScripts {
     doFirst {
-        applicationDefaultJvmArgs = ['']
+        if (!os.isWindows()) {
+            applicationDefaultJvmArgs = ['']
+        }
     }
     doLast {
         // TODO write a custom template
         //  see https://docs.gradle.org/current/javadoc/org/gradle/jvm/application/tasks/CreateStartScripts.html
-        unixScript.text = unixScript.text.replace('DEFAULT_JVM_OPTS=\'""\'', 'DEFAULT_JVM_OPTS="-Djava.library.path=$APP_HOME/nativelib"')
-        windowsScript.text = windowsScript.text.replace('DEFAULT_JVM_OPTS=\'""\'', 'DEFAULT_JVM_OPTS=%~dp0..\\nativelib')
+        unixScript.text = unixScript.text.replace('DEFAULT_JVM_OPTS=\'""\'', 'DEFAULT_JVM_OPTS="-Djava.library.path=../nativelib"')
+//        windowsScript.text = windowsScript.text.replace('DEFAULT_JVM_OPTS=""', 'DEFAULT_JVM_OPTS="%~dp0..\\nativelib"')
     }
 }
 
@@ -123,6 +131,8 @@ task copyReleaseLibsIntoJlinkImage(type: Copy) {
 
     from configurations.jniReleaseRuntime
     into 'build/image/bin'
+
+    setDescription("Copies built native library into JLink image directory")
 }
 
 jlink {
@@ -130,9 +140,11 @@ jlink {
     imageZip = project.file("${buildDir}/distributions/rattlegram-desktop-${version}-${javafx.platform.classifier}-jlink-image.zip")
     launcher {
         name = 'rattlegram-desktop'
-        jvmArgs = [
-                '-Djava.library.path={{BIN_DIR}}'
-        ]
+        if (!os.isWindows()) {
+            jvmArgs = [
+                    '-Djava.library.path={{BIN_DIR}}'
+            ]
+        }
     }
 }
 
