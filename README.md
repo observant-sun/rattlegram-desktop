@@ -4,7 +4,7 @@ Desktop port of https://github.com/aicodix/rattlegram.
 
 Transceive UTF-8 text messages with up to 170 bytes over audio in about a second, on desktop, with a GUI.
 
-Tested on Linux and Windows, distributed for Linux, Windows and MacOS. 
+Tested on Linux and Windows, distributed for Linux, Windows and macOS. 
 
 If you encounter a problem, please open a new issue and describe it in detail.
 
@@ -39,6 +39,3 @@ A file `gui/build/distributions/rattlegram-desktop-{version}-{platform}.zip` sho
 ```bash
 ./gradlew build
 ```
-
-## TODO
-* Show expected encoder mode based on message length
