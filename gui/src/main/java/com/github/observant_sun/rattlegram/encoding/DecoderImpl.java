@@ -152,7 +152,7 @@ class DecoderImpl implements Decoder {
 
         private final int statusCode;
 
-        private static final Map<Integer, DecoderStatus> codeToStatusMap = new HashMap<>(7);
+        private static final Map<Integer, DecoderStatus> codeToStatusMap = new HashMap<>();
 
         static {
             for (DecoderStatus status : values()) {

@@ -12,6 +12,8 @@ import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -27,6 +29,8 @@ import java.util.*;
 
 @Slf4j
 public class MainWindowController implements Initializable {
+
+    private static final int MAX_MESSAGE_BYTE_LENGTH = 170;
 
     private static final TextFormatter<Object> callsignBoxTextFormatter = new TextFormatter<>(change -> {
         String text = change.getText();
@@ -52,7 +56,6 @@ public class MainWindowController implements Initializable {
             return change;
         }
         int controlNewTextBytesLength = change.getControlNewText().getBytes(StandardCharsets.UTF_8).length;
-        int MAX_MESSAGE_BYTE_LENGTH = 170;
         if (controlNewTextBytesLength <= MAX_MESSAGE_BYTE_LENGTH) {
             return change;
         }
@@ -64,6 +67,32 @@ public class MainWindowController implements Initializable {
         change.setText(changeText);
         return change;
     });
+
+    private static final String IMAGE_PATH_STRONG_PROTECTION = "/images/indicator_green.png";
+    private static final String IMAGE_PATH_MEDIUM_PROTECTION = "/images/indicator_yellow.png";
+    private static final String IMAGE_PATH_NORMAL_PROTECTION = "/images/indicator_orange.png";
+    private static final String IMAGE_PATH_MESSAGE_TOO_LONG = "/images/indicator_orange.png";
+
+    private String getProtectionStrengthImagePath(int messageLength) {
+        if (messageLength <= 85) {
+            return IMAGE_PATH_STRONG_PROTECTION;
+        } else if (messageLength <= 128) {
+            return IMAGE_PATH_MEDIUM_PROTECTION;
+        } else if (MAX_MESSAGE_BYTE_LENGTH <= 170) {
+            return IMAGE_PATH_NORMAL_PROTECTION;
+        } else {
+            return IMAGE_PATH_MESSAGE_TOO_LONG;
+        }
+    }
+
+    private void setEncodingProtectionStrengthImageView(int oldMessageLength, int newMessageLength) {
+        String oldImagePath = getProtectionStrengthImagePath(oldMessageLength);
+        String newImagePath = getProtectionStrengthImagePath(newMessageLength);
+        if (oldImagePath.equals(newImagePath) && encodingProtectionStrengthImageView.getImage() != null) {
+            return;
+        }
+        encodingProtectionStrengthImageView.setImage(new Image(getClass().getResourceAsStream(newImagePath)));
+    }
 
     @FXML
     private ButtonBar topButtonBar;
@@ -87,6 +116,10 @@ public class MainWindowController implements Initializable {
     private TextField callsignBox;
     @FXML
     private TextField messageBox;
+    @FXML
+    private ImageView encodingProtectionStrengthImageView;
+    @FXML
+    private Label messageBoxSymbolsLeftLabel;
 
     private Model model;
     private DecoderInteractor decoderInteractor;
@@ -106,6 +139,13 @@ public class MainWindowController implements Initializable {
 
         this.callsignBox.setTextFormatter(callsignBoxTextFormatter);
         this.messageBox.setTextFormatter(messageBoxTextFormatter);
+        this.messageBox.textProperty().addListener((observable, oldValue, newValue) -> {
+            int oldMessageLength = Optional.ofNullable(oldValue).map(string -> string.getBytes(StandardCharsets.UTF_8)).map(bytes -> bytes.length).orElse(0);
+            int newMessageLength = Optional.ofNullable(newValue).map(string -> string.getBytes(StandardCharsets.UTF_8)).map(bytes -> bytes.length).orElse(0);
+            setEncodingProtectionStrengthImageView(oldMessageLength, newMessageLength);
+            this.messageBoxSymbolsLeftLabel.setText(String.valueOf(MAX_MESSAGE_BYTE_LENGTH - newMessageLength));
+        });
+        setEncodingProtectionStrengthImageView(0, 0);
 
         try {
             SpectrumAnalyzerWindowStarter.get().start();

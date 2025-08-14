@@ -10,6 +10,7 @@
 
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.github.observant_sun.rattlegram.controller.MainWindowController">
     <VBox fx:id="vBox" AnchorPane.bottomAnchor="0" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
@@ -28,18 +29,22 @@
                textAlignment="CENTER" prefWidth="Infinity"/>
         <TextArea fx:id="messagesTextArea" editable="false" minWidth="400" VBox.vgrow="ALWAYS">
         </TextArea>
-        <HBox fx:id="hBox" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" VBox.vgrow="NEVER" minHeight="30">
+        <HBox fx:id="hBox" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" VBox.vgrow="NEVER" minHeight="30" alignment="CENTER">
             <TextField fx:id="callsignBox" HBox.hgrow="ALWAYS" promptText="%com.github.observant_sun.rattlegram.controller.MainWindowController.callsignBox.promptText" prefWidth="120" maxWidth="120">
                 <font>
                     <Font name="SansSerif Regular" size="14.0"/>
                 </font>
             </TextField>
             <TextField fx:id="messageBox" onKeyPressed="#sendMethod" promptText="%com.github.observant_sun.rattlegram.controller.MainWindowController.messageBox.promptText"
-                       HBox.hgrow="ALWAYS" prefWidth="599">
+                       HBox.hgrow="ALWAYS" prefWidth="599" >
                 <font>
                     <Font name="SansSerif Regular" size="14.0"/>
                 </font>
             </TextField>
+            <ImageView fx:id="encodingProtectionStrengthImageView" fitHeight="16" preserveRatio="true" >
+            </ImageView>
+            <Label fx:id="messageBoxSymbolsLeftLabel" HBox.hgrow="NEVER" text="170" prefWidth="30" alignment="CENTER">
+            </Label>
         </HBox>
     </VBox>
 </AnchorPane>
