@@ -49,3 +49,9 @@ tasks.withType(CppCompile).configureEach {
     )
 
 }
+
+tasks.withType(LinkSharedLibrary).configureEach {
+    if (os.isWindows()) {
+        linkerArgs.add '--static'
+    }
+}
